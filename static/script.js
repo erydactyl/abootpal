@@ -8,8 +8,7 @@ function joinGame() {
     console.log("selected nickname", nick.value);
     
     document.getElementById("nickname").style.display = "none";
-    document.getElementById("message").style.display = "block";
-    document.getElementById("messages").style.display = "inline";
+    document.getElementById("body").style.display = "block";
     
     client.joinOrCreate("abootpal", {nickname: nick.value}).then(room => {
         console.log("joined");

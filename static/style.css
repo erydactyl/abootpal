@@ -3,10 +3,6 @@ body {
     /*font-family: Tahoma, Geneva, sans-serif;*/
 }
 
-body p {
-    text-align: center;
-}
-
 #header-wrapper {
     width: auto;
     height: auto;
@@ -75,8 +71,67 @@ body p {
     margin-right: auto;
 }
 
-#message {
+#body {
     display: none;
+    
+    width: 700px;
+    height: 700px;
+    background-color: #dddddd;
+    
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #000000;
+}
+
+#leftcol {
+    float: left;
+    width: 200px;
+    height: 100%;
+}
+
+#rightcol {
+    float: right;
+    width: 500px;
+    height: 100%;
+}
+
+#status {
+    width: 100%;
+    height: 150px;
+}
+
+#scores {
+    width: 100%;
+    height: 400px;
+}
+
+#controls {
+    width: 100%;
+    height: 150px;
+}
+
+
+#mainwindow {
+    width: 100%;
+    height: 550px;
+    background-color: #ffffff;
+}
+
+#messages {
+    width: 100%;
+    height: 118px;
+    
+    overflow-y:scroll;
+}
+
+#messages p {
+    margin: 4px 0px 0px 4px;
+}
+
+#message {
+    width: 100%;
+    height: 32px;
+    
     text-align: center;
 }
 
@@ -84,10 +139,11 @@ body p {
     display: inline-block;
     text-align: left;
     
+    padding-top: 5px;
     margin-left: auto;
     margin-right: auto;
 }
 
-#messages {
-    display: none;
+#input-message {
+    width: 434px;
 }

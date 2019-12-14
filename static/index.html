@@ -20,8 +20,6 @@
       </div>
       <h2>A.K.A. abootpal, v.0.0.1, by <a href="http://dylanjw.co.uk">Dylan J. W.</a></h2>
     </div>
-      
-    <p>Yee haw, buckaroos!</p>
     
     <div id="nickname">
       <form id="form-nickname" onsubmit="return joinGame();">
@@ -31,14 +29,37 @@
       </form>
     </div>
     
-    <div id="message">
-      <form id="form-message">
-        <label for="form-message">Message:</label>
-        <input type="text" id="input-message" autocomplete="off" value="" />
-        <input type="submit" value="Send" />
-      </form>
-    </div>
+    <div id="body">
+    
+      <div id="leftcol">
 
-    <div id="messages"></div>
+        <div id="status"></div>
+
+        <div id="scores"></div>
+
+        <div id="controls"></div>
+        
+      </div>
+    
+      <div id="rightcol">
+
+        <div id="mainwindow"></div>
+
+        <div id="messages">
+          <p>Welcome to this abootpal game!</p>
+        </div>
+    
+        <div id="message">
+          <form id="form-message">
+            <input type="text" id="input-message" autocomplete="off" placeholder="Type a message to chat" value="" />
+            <input type="submit" value="Send" />
+          </form>
+        </div>
+        
+      </div>
+    </div>
+    
+    </div>
+    
   </body>
 </html>
