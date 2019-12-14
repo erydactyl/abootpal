@@ -10,49 +10,14 @@ export class Player extends Schema {
         this.score = 0;
     }
     
-    modifyScore(points: number = 1) {
+    modifyScore(points: number) {
         this.score += points;
     }
 }
 
-export class Abootpal extends Room {
-    
+export class AbootpalGameState extends Schema {
+    @type({ map: Player })
     players = new MapSchema<Player>();
-    
-    // Listener functions
-    onCreate (options: any) {
-        console.log("BasicRoom created!", options);
-    }
-    
-    onJoin (client: Client, options: any) {
-        this.createPlayer(client.sessionId, options.nickname)
-        this.broadcast(`${ this.players[client.sessionId].nickname } joined.`);
-        console.log("Join:", options);
-    }
-    
-    onLeave (client: Client, consented: boolean) {
-        if (consented) {
-            this.broadcast(`${ this.players[client.sessionId].nickname } left.`);
-        } else {
-            this.broadcast(`${ this.players[client.sessionId].nickname } was disconnected.`);
-        }
-        this.removePlayer(client.sessionId);
-    }
-    
-    onMessage (client: Client, data: any) {
-        console.log("BasicRoom received message from", client.sessionId, "(", this.players[client.sessionId].nickname, "):", data);
-        if (data.message=="/score increase") {
-            this.players[client.sessionId].modifyScore(1);
-        } else if (data.message=="/score show") {
-            this.broadcast(`[${ this.players[client.sessionId].nickname }'s score is ${ this.players[client.sessionId].score }]`);
-        } else {
-            this.broadcast(`[${ this.players[client.sessionId].nickname }] ${ data.message }`);
-        }
-    }
-    
-    onDispose() {
-        console.log("Dispose BasicRoom");
-    }
     
     // Player management functions
     createPlayer (id: string, nickname: string) {
@@ -61,6 +26,60 @@ export class Abootpal extends Room {
     
     removePlayer (id: string) {
         delete this.players[ id ];
+    }
+    
+    modifyPlayerScore(id: string, points: number) {
+        this.players[id].modifyScore(points);
+    }
+    
+    getPlayerNickname(id: string) {
+        return this.players[id].nickname;
+    }
+    getPlayerScore(id: string) {
+        return this.players[id].score;
+    }
+}
+
+export class StateHandlerRoom extends Room<AbootpalGameState> {
+    
+    // Listener functions
+    onCreate (options: any) {
+        console.log("StateHandlerRoom created!", options);
+        this.setState(new AbootpalGameState());
+    }
+    
+    onJoin (client: Client, options: any) {
+        console.log("Before");
+        this.state.createPlayer(client.sessionId, options.nickname)
+        console.log("After");
+        
+        this.broadcast(`${ this.state.getPlayerNickname(client.sessionId) } joined.`);
+        console.log("Join:", client.sessionId, options);
+    }
+    
+    onLeave (client: Client, consented: boolean) {
+        if (consented) {
+            this.broadcast(`${ this.state.getPlayerNickname(client.sessionId) } left.`);
+        } else {
+            this.broadcast(`${ this.state.getPlayerNickname(client.sessionId) } was disconnected.`);
+        }
+        
+        this.state.removePlayer(client.sessionId);
+    }
+    
+    onMessage (client: Client, data: any) {
+        console.log("StateHandlerRoom received message from", client.sessionId, "(", this.state.getPlayerNickname(client.sessionId), "):", data);
+        if (data.message=="/score increase") {
+            this.state.modifyPlayerScore(client.sessionId, 1);
+        } else if (data.message=="/score show") {
+            this.broadcast(`[${ this.state.getPlayerNickname(client.sessionId) }'s score is ${ this.state.getPlayerScore(client.sessionId) }]`);
+        } else {
+            this.broadcast(`[${ this.state.getPlayerNickname(client.sessionId) }] ${ data.message }`);
+        }
+    }
+    
+    onDispose() {
+        console.log("Dispose StateHandlerRoom");
     }
     
 
