@@ -13,7 +13,7 @@ export class Abootpal extends Room {
     
     players = new MapSchema<Player>();
     
-    // Main functions
+    // Listener functions
     onCreate (options: any) {
         console.log("BasicRoom created!", options);
     }
@@ -30,6 +30,7 @@ export class Abootpal extends Room {
         } else {
             this.broadcast(`${ this.players[client.sessionId].nickname } was disconnected.`);
         }
+        this.removePlayer(client.sessionId);
     }
     
     onMessage (client: Client, message: any) {
@@ -41,7 +42,7 @@ export class Abootpal extends Room {
         console.log("Dispose BasicRoom");
     }
     
-    // Other functions
+    // Player management functions
     createPlayer (id: string, nickname: string) {
         this.players[ id ] = new Player(nickname);
     }
