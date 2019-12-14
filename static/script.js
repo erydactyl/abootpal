@@ -5,6 +5,8 @@ function joinGame() {
     // get nickname from input field
     var nick = document.querySelector("#input-nickname");
     
+    if (nick.value == "") { return false; } // don't allow empty nicknames
+    
     console.log("selected nickname", nick.value);
     
     document.getElementById("nickname").style.display = "none";
@@ -28,21 +30,11 @@ function joinGame() {
             document.querySelector("#messages").appendChild(p);
         });
 
-        // submit nickname
-        document.querySelector("#form-nickname").onsubmit = function(e) {
-            e.preventDefault();
-            var input = document.querySelector("#input-nickname");
-            console.log("input nickname:", input.value);
-            // send data to room
-            room.send({ message: input.value });
-            // clear input
-            input.value = "";
-        }
-
         // send message to room on submit
         document.querySelector("#form-message").onsubmit = function(e) {
             e.preventDefault();
             var input = document.querySelector("#input-message");
+            if (input.value == "") { return false; } // don't send empty messages
             console.log("input message:", input.value);
             // send data to room
             room.send({ message: input.value });
