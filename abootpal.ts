@@ -3,9 +3,15 @@ import { Schema, type, MapSchema } from "@colyseus/schema";
 
 export class Player extends Schema {
     nickname: string;
+    score: number;
     constructor(nickname: string) {
         super();
         this.nickname = nickname;
+        this.score = 0;
+    }
+    
+    modifyScore(points: number = 1) {
+        this.score += points;
     }
 }
 
@@ -33,9 +39,15 @@ export class Abootpal extends Room {
         this.removePlayer(client.sessionId);
     }
     
-    onMessage (client: Client, message: any) {
-        console.log("BasicRoom received message from", client.sessionId, "(", this.players[client.sessionId].nickname, "):", message);
-        this.broadcast(`[${ this.players[client.sessionId].nickname }] ${ message.message }`);
+    onMessage (client: Client, data: any) {
+        console.log("BasicRoom received message from", client.sessionId, "(", this.players[client.sessionId].nickname, "):", data);
+        if (data.message=="/score increase") {
+            this.players[client.sessionId].modifyScore(1);
+        } else if (data.message=="/score show") {
+            this.broadcast(`[${ this.players[client.sessionId].nickname }'s score is ${ this.players[client.sessionId].score }]`);
+        } else {
+            this.broadcast(`[${ this.players[client.sessionId].nickname }] ${ data.message }`);
+        }
     }
     
     onDispose() {
@@ -50,5 +62,6 @@ export class Abootpal extends Room {
     removePlayer (id: string) {
         delete this.players[ id ];
     }
+    
 
 }
