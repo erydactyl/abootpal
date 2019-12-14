@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width" />
+    
+    <!-- css -->
+    <link href="style.css" rel="stylesheet" type="text/css" media="all">
+    
+    <!-- colyseus.js client -->
+    <script type="text/javascript" src="https://rawcdn.githack.com/colyseus/colyseus.js/b769c403be25dcb52bac71d3fb9f45c9f7ac556e/dist/colyseus.js"></script>
+    
+    <!-- main js -->
+    <script src="script.js"></script>
+
+  </head>
+  <body>
+    <div id="header-wrapper">
+      <div id="title">
+        <h1>All-but-one of these people are lying</h1>
+      </div>
+      <h2>A.K.A. abootpal, v.0.0.1, by <a href="http://dylanjw.co.uk">Dylan J. W.</a></h2>
+    </div>
+      
+    <p>Yee haw, buckaroos!</p>
+    
+    <div id="nickname">
+      <form id="form-nickname" onsubmit="return joinGame();">
+        <label for="form-nickname">Choose a nickname:</label>
+        <input type="text" id="input-nickname" value="" autofocus />
+        <input type="submit" value="Join game" />
+      </form>
+    </div>
+    
+    <div id="message">
+      <form id="form-message">
+        <label for="form-message">Message:</label>
+        <input type="text" id="input-message" autocomplete="off" value="" />
+        <input type="submit" value="Send" />
+      </form>
+    </div>
+
+    <div id="messages"></div>
+  </body>
+</html>

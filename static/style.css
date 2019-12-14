@@ -1,0 +1,93 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    /*font-family: Tahoma, Geneva, sans-serif;*/
+}
+
+body p {
+    text-align: center;
+}
+
+#header-wrapper {
+    width: auto;
+    height: auto;
+    
+    margin-top: 16px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#header-wrapper h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    font-style: italic;
+    text-align: center;
+    color: #777777;
+    
+    margin-top: 12px;
+}
+
+#header-wrapper h2 a {
+    text-decoration: inherit;
+    color: inherit;
+}
+
+#header-wrapper h2 a:hover {
+    text-decoration: underline;
+    color: #666666;
+}
+
+#title {
+    background-color: #e4000f;
+    width: 400px;
+    height: 96px;
+    
+    border-radius: 20px;
+    border: 4px solid #940404;
+    
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#title h1 {
+    font-family: "Arial Black", Gadget, sans-serif;
+    font-size: 32px;
+    font-weight: normal;
+    text-align: center;
+    -webkit-text-fill-color: white;
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: black;
+    
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+#nickname {
+    display: block;
+    text-align: center;
+}
+
+#nickname form {
+    display: inline-block;
+    text-align: left;
+    
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#message {
+    display: none;
+    text-align: center;
+}
+
+#message form {
+    display: inline-block;
+    text-align: left;
+    
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#messages {
+    display: none;
+}
