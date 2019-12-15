@@ -6,7 +6,7 @@ import { Server } from 'colyseus';
 import { monitor } from '@colyseus/monitor';
 //import socialRoutes from '"'@colyseus/social/express'
 
-import { StateHandlerRoom } from './abootpal';
+import { StateHandlerRoom } from './server/abootpal';
 
 const port = Number(process.env.PORT || 25565);
 const app = express()
@@ -26,7 +26,7 @@ gameServer.define('abootpal', StateHandlerRoom);
 //app.use("/", socialRoutes);
 
 // register main page
-app.use('/', express.static(path.join(__dirname, 'static')));
+app.use('/', express.static(path.join(__dirname, 'client')));
 
 // register colyseus monitor AFTER registering your room handlers
 // this is optional!
