@@ -11,7 +11,7 @@
   "homepage": "https://github.com/Dylan-JW/abootpal#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Dylan-JW/abootpal",
+    "url": "https://github.com/Dylan-JW/abootpal"
   },
   "devDependencies": {
     "@colyseus/loadtest": "^0.11.0",
