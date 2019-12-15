@@ -43,6 +43,7 @@ export class AbootpalGameState extends Schema {
 }
 
 export class StateHandlerRoom extends Room<AbootpalGameState> {
+    maxClients = Constants.ROOM_PLAYERS_MAX;
     
     // Listener functions
     onCreate (options: any) {
