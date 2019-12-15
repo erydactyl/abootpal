@@ -5,6 +5,10 @@
   "main": "index.ts",
   "author": "Dylan J. White",
   "license": "UNLICENSED",
+  "scripts": {
+    "start": "ts-node index.ts",
+    "heroku-postbuild": "npm run build"
+  },
   "bugs": {
     "url": "https://github.com/Dylan-JW/abootpal/issues"
   },
