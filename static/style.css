@@ -105,6 +105,14 @@ body {
     height: 400px;
 }
 
+#scores h3 {
+    text-align: center;
+}
+
+#scores p {
+    margin: 4px 0px 0px 4px;
+}
+
 #controls {
     width: 100%;
     height: 150px;

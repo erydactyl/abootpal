@@ -12,24 +12,54 @@ function joinGame() {
     document.getElementById("nickname").style.display = "none";
     document.getElementById("body").style.display = "block";
     
-    client.joinOrCreate("abootpal", {nickname: nick.value}).then(room => {
+    var playerscores = {};
+    
+    var room;
+    client.joinOrCreate("abootpal", {nickname: nick.value}).then(room_instance => {
+        room = room_instance;
         console.log("joined");
+        
         room.onStateChange.once(function(state) {
             console.log("initial room state:", state);
         });
-
+        
         // new room state
         room.onStateChange(function(state) {
-            // this signal is triggered on each patch
         });
-
+        
         // listen to patches coming from the server
         room.onMessage(function(message) {
             var p = document.createElement("p");
             p.innerHTML = message;
             document.querySelector("#messages").appendChild(p);
         });
-
+        
+        room.state.players.onAdd = function(player, sessionId) {
+            var pscore = document.createElement("p");
+            pscore.style.width = "100%";
+            pscore.style.height = "24";
+            
+            playerscores[sessionId] = pscore;
+            document.querySelector("#scores").appendChild(pscore);
+            
+            drawPlayerScore(player, sessionId);
+            
+            // call player.onChange()
+            player.triggerAll();
+        }
+        
+        room.state.players.onRemove = function(player, sessionId) {
+            document.querySelector("#scores").removeChild(playerscores[sessionId]);
+            delete playerscores[sessionId];
+        }
+        
+        room.state.players.onChange = function(player, sessionId) {
+            // update all player scores
+            Object.keys(playerscores).forEach(function(sessionId) {
+                drawPlayerScore(room.state.players[sessionId], sessionId);
+            });
+        }
+        
         // send message to room on submit
         document.querySelector("#form-message").onsubmit = function(e) {
             e.preventDefault();
@@ -42,5 +72,10 @@ function joinGame() {
             input.value = "";
         }
     });
+    
+    function drawPlayerScore(player, sessionId) {
+        playerscores[sessionId].innerHTML = player.nickname + ": " + player.score;
+    }
+    
     return false;
 }

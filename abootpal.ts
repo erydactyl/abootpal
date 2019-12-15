@@ -2,12 +2,13 @@ import { Room, Client } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
 
 export class Player extends Schema {
-    nickname: string;
-    score: number;
+    @type("string")
+    nickname = "";
+    @type("number")
+    score = 0;
     constructor(nickname: string) {
         super();
         this.nickname = nickname;
-        this.score = 0;
     }
     
     modifyScore(points: number) {
@@ -49,9 +50,7 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
     }
     
     onJoin (client: Client, options: any) {
-        console.log("Before");
         this.state.createPlayer(client.sessionId, options.nickname)
-        console.log("After");
         
         this.broadcast(`${ this.state.getPlayerNickname(client.sessionId) } joined.`);
         console.log("Join:", client.sessionId, options);
