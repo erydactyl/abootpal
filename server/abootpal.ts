@@ -51,7 +51,11 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
     }
     
     onJoin (client: Client, options: any) {
-        this.state.createPlayer(client.sessionId, options.nickname.slice(0, Constants.NICKNAME_MAX_LENGTH));
+        var nickname: string = options.nickname;
+        if (nickname === null || nickname.length < 1) {
+            nickname = "DefaultNick";
+        }
+        this.state.createPlayer(client.sessionId, nickname.slice(0, Constants.NICKNAME_MAX_LENGTH));
         
         this.broadcast(`${ this.state.getPlayerNickname(client.sessionId) } joined.`);
         console.log("Join:", client.sessionId, options);

@@ -24,7 +24,7 @@
     <div id="nickname">
       <form id="form-nickname" onsubmit="return joinGame();">
         <label for="form-nickname">Choose a nickname:</label>
-        <input type="text" id="input-nickname" value="" autofocus />
+        <input type="text" id="input-nickname" minlength=1 maxlength=16 value="" autofocus />
         <input type="submit" value="Join game" />
       </form>
     </div>
@@ -53,7 +53,7 @@
     
         <div id="message">
           <form id="form-message">
-            <input type="text" id="input-message" autocomplete="off" placeholder="Type a message to chat" value="" />
+            <input type="text" id="input-message" autocomplete="off" minlength=1 maxlength=256 placeholder="Type a message to chat" value="" />
             <input type="submit" value="Send" />
           </form>
         </div>
