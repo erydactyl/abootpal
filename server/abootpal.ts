@@ -1,5 +1,6 @@
 import { Room, Client } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
+import * as Constants from "./constants";
 
 export class Player extends Schema {
     @type("string")
@@ -50,7 +51,7 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
     }
     
     onJoin (client: Client, options: any) {
-        this.state.createPlayer(client.sessionId, options.nickname)
+        this.state.createPlayer(client.sessionId, options.nickname.slice(0, Constants.NICKNAME_MAX_LENGTH));
         
         this.broadcast(`${ this.state.getPlayerNickname(client.sessionId) } joined.`);
         console.log("Join:", client.sessionId, options);
@@ -73,7 +74,7 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
         } else if (data.message=="/score show") {
             this.broadcast(`[${ this.state.getPlayerNickname(client.sessionId) }'s score is ${ this.state.getPlayerScore(client.sessionId) }]`);
         } else {
-            this.broadcast(`[${ this.state.getPlayerNickname(client.sessionId) }] ${ data.message }`);
+            this.broadcast(`[${ this.state.getPlayerNickname(client.sessionId) }] ${ data.message.slice(0, Constants.CHATMESSAGE_MAX_LENGTH) }`);
         }
     }
     
