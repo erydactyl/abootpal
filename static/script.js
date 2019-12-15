@@ -30,7 +30,7 @@ function joinGame() {
         // listen to patches coming from the server
         room.onMessage(function(message) {
             var p = document.createElement("p");
-            p.innerHTML = message;
+            p.innerText = message;
             document.querySelector("#messages").appendChild(p);
         });
         
@@ -74,7 +74,7 @@ function joinGame() {
     });
     
     function drawPlayerScore(player, sessionId) {
-        playerscores[sessionId].innerHTML = player.nickname + ": " + player.score;
+        playerscores[sessionId].innerText = player.nickname + ": " + player.score;
     }
     
     return false;
