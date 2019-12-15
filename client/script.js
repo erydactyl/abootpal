@@ -29,9 +29,16 @@ function joinGame() {
         
         // listen to patches coming from the server
         room.onMessage(function(message) {
+            var messagesdiv = document.getElementById("messages");
+            const isScrolledToBottom = messagesdiv.scrollHeight - messagesdiv.clientHeight <= messagesdiv.scrollTop + 1;
+            // add message to page
             var p = document.createElement("p");
             p.innerText = message;
-            document.querySelector("#messages").appendChild(p);
+            messagesdiv.appendChild(p);
+            // if already scrolled to the bottom, stay at the bottom
+            if (isScrolledToBottom) {
+                messagesdiv.scrollTop = messagesdiv.scrollHeight;
+            }
         });
         
         room.state.players.onAdd = function(player, sessionId) {
