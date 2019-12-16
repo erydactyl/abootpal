@@ -25,6 +25,14 @@ function joinGame() {
         
         // new room state
         room.onStateChange(function(state) {
+            console.log("Room state updated: ", state)
+            document.querySelector("#status-gamestate").innerText = state.gamestate;
+            if (state.gamestate === "Playing" || state.gamestate === "Waiting") {
+                document.querySelector("#status-roundnumber").innerText = "Round " + state.round_number;
+            } else { document.querySelector("#status-roundnumber").innerText = ""; }
+            if (state.gamestate === "Playing") {
+                document.querySelector("#status-playstate-timeleft").innerText = state.playstate + ": " + state.timeleft + "s left";
+            } else { document.querySelector("#status-playstate-timeleft").innerText = ""; }
         });
         
         // listen to patches coming from the server
