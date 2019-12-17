@@ -5,7 +5,7 @@ import * as Constants from "./constants";
 export type GameState = "Waiting" | "Lobby" | "Playing";
 export type PlayState = "null" | "Research" | "Describe" | "Judge";
 
-export type MessageType = "DisplayArticle" | "RemoveArticle" | "Chat";
+export type MessageType = "GameStatus" | "DisplayArticle" | "RemoveArticle" | "Chat";
 
 export class Message extends Schema {
     public type: MessageType;
@@ -44,20 +44,13 @@ export class Player extends Schema {
 }
 
 export class AbootpalGameState extends Schema {
-    @type("string")
     private gamestate: GameState = "Lobby";
-    @type("string")
     private playstate: PlayState = "null";
     
-    @type({ map: "number" })
     private timers_max: MapSchema<"number"> = new MapSchema<"number">();
-    @type("number")
     private last_playstate_change_time: number = Date.now();
-    @type("number")
     private round_number: number = 0;
-    
-    @type("number")
-    public timeleft: number = 0;
+    private last_time_left_val: number = -1;
     
     @type({ map: Player })
     public players: MapSchema<Player> = new MapSchema<Player>();
@@ -79,6 +72,12 @@ export class AbootpalGameState extends Schema {
         return count;
     }
     
+    // get time left in the current play state
+    private get time_left() {
+        if (this.gamestate != "Playing") { return 0; }
+        return Math.ceil(this.timers_max[this.playstate] - (Date.now() - this.last_playstate_change_time)/1000);
+    }
+    
     // *** Game management ***
     setGameState(newgamestate: GameState) {
         // don't update if already in desired state
@@ -92,7 +91,6 @@ export class AbootpalGameState extends Schema {
                 // only change to Waiting if currently in Playing
                 if (this.gamestate != "Playing") { return "Error: Must be in Playing mode to enter Waiting mode"; }
                 
-                this.timeleft = 0;
                 this.playstate = "null";
             } break;
             
@@ -100,7 +98,6 @@ export class AbootpalGameState extends Schema {
                 // * conditions*
                 // none
                 
-                this.timeleft = 0;
                 this.round_number = 0;
                 this.playstate = "null";
             } break;
@@ -128,6 +125,7 @@ export class AbootpalGameState extends Schema {
         
         // update state
         this.gamestate = newgamestate;
+        this.broadcastGameStatus();
         return true;
     }
     
@@ -156,6 +154,7 @@ export class AbootpalGameState extends Schema {
         // update state
         this.last_playstate_change_time = Date.now();
         this.playstate = newplaystate;
+        this.broadcastGameStatus();
     }
     
     // update the game
@@ -168,8 +167,11 @@ export class AbootpalGameState extends Schema {
                 
             } break;
             case "Playing": {
-                // update time left
-                this.timeleft = Math.ceil(this.timers_max[this.playstate] - (Date.now() - this.last_playstate_change_time)/1000);
+                // check last_time to see if client game state information needs updating
+                if (this.time_left != this.last_time_left_val) {
+                    this.last_time_left_val = this.time_left;
+                    this.broadcastGameStatus();
+                }
                 
                 // enter Waiting state if number of players in room drops too low
                 if (this.players_count < Constants.ROOM_PLAYERS_MIN) {
@@ -180,22 +182,17 @@ export class AbootpalGameState extends Schema {
                 // state-specific logic
                 switch(this.playstate) {
                     case "Research": {
-                        if (this.timeleft <= 0) { this.setPlayState("Describe"); }
+                        if (this.time_left <= 0) { this.setPlayState("Describe"); }
                     } break;
                     case "Describe": {
-                        if (this.timeleft <= 0) { this.setPlayState("Judge"); }
+                        if (this.time_left <= 0) { this.setPlayState("Judge"); }
                     } break;
                     case "Judge": {
-                        if (this.timeleft <= 0) { this.setPlayState("Research"); this.round_number++;}
+                        if (this.time_left <= 0) { this.setPlayState("Research"); this.round_number++;}
                     } break;
                 }
             } break;
         }
-    }
-    
-    // send a wikipedia article to a specific player
-    sendWikiArticle(sessionId: string, articleTitle: string, language: string = "en") {
-        this.onMessage(new Message("DisplayArticle", {url: "http://" + language + ".wikipedia.org/w/index.php?title=" + encodeURIComponent(articleTitle) + "&printable=yes"}), sessionId);
     }
     
     // *** Player management ***
@@ -216,6 +213,17 @@ export class AbootpalGameState extends Schema {
     }
     getPlayerScore(id: string) {
         return this.players[id].score;
+    }
+    
+    // *** Messages ***
+    // send a wikipedia article to a specific player
+    sendWikiArticle(sessionId: string, articleTitle: string, language: string = "en") {
+        this.onMessage(new Message("DisplayArticle", {url: "http://" + language + ".wikipedia.org/w/index.php?title=" + encodeURIComponent(articleTitle) + "&printable=yes"}), sessionId);
+    }
+    
+    // send updated game status information to all players
+    broadcastGameStatus() {
+        this.onMessage(new Message("GameStatus", {gamestate: this.gamestate, playstate: this.playstate, round_number: this.round_number, time_left: this.time_left}));
     }
 }
 

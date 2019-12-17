@@ -26,13 +26,6 @@ function joinGame() {
         // new room state
         room.onStateChange(function(state) {
             //console.log("Room state updated: ", state)
-            document.querySelector("#status-gamestate").innerText = state.gamestate;
-            if (state.gamestate === "Playing" || state.gamestate === "Waiting") {
-                document.querySelector("#status-roundnumber").innerText = "Round " + state.round_number;
-            } else { document.querySelector("#status-roundnumber").innerText = ""; }
-            if (state.gamestate === "Playing") {
-                document.querySelector("#status-playstate-timeleft").innerText = state.playstate + ": " + state.timeleft + "s left";
-            } else { document.querySelector("#status-playstate-timeleft").innerText = ""; }
         });
         
         // listen to patches coming from the server
@@ -51,9 +44,21 @@ function joinGame() {
                     messagesdiv.scrollTop = messagesdiv.scrollHeight;
                 }
             }
+            // game state update message
+            else if (message.type === "GameStatus") {
+                document.querySelector("#status-gamestate").innerText = message.data.gamestate;
+                if (message.data.gamestate === "Playing" || message.data.gamestate === "Waiting") {
+                    document.querySelector("#status-roundnumber").innerText = "Round " + message.data.round_number;
+                } else { document.querySelector("#status-roundnumber").innerText = ""; }
+                if (message.data.gamestate === "Playing") {
+                    document.querySelector("#status-playstate-timeleft").innerText = message.data.playstate + ": " + message.data.time_left + "s left";
+                } else { document.querySelector("#status-playstate-timeleft").innerText = ""; }
+            }
+            // display article message
             else if (message.type === "DisplayArticle") {
                 document.querySelector("#wikiframe").src = message.data.url;
             }
+            // remove article message
             else if (message.type === "RemoveArticle") {
                 document.querySelector("#wikiframe").src = "";
             }
