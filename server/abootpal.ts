@@ -2,10 +2,22 @@ import { Room, Client } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
 import * as Constants from "./constants";
 
+var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
+
 export type GameState = "Waiting" | "Lobby" | "Playing";
 export type PlayState = "null" | "Research" | "Describe" | "Judge";
 
 export type MessageType = "GameStatus" | "DisplayArticle" | "RemoveArticle" | "Chat";
+
+export function getJSONfromURL(url: string, callback: any) {
+    var xhr = new XMLHttpRequest();
+    var res: any;
+    xhr.open("GET", url, true);
+    xhr.onload = function() {
+        callback(JSON.parse(xhr.responseText));
+    }
+    xhr.send(null);
+}
 
 export class Message extends Schema {
     public type: MessageType;
@@ -137,10 +149,10 @@ export class AbootpalGameState extends Schema {
         // update room 
         switch(newplaystate) {
             case "Research": {
-                var testArticles = ["January", "Donald_D._Clayton", "Walter_S._Bowman"];
+                // testing: send each player a random article
                 for (const sessionId in this.players) {
-                    var a = testArticles[Math.floor(Math.random() * testArticles.length)];
-                    this.sendWikiArticle(sessionId, a);
+                    //var article = 
+                    //this.sendWikiArticle(sessionId, a);
                 }
             } break;
             case "Describe": {
@@ -215,12 +227,27 @@ export class AbootpalGameState extends Schema {
         return this.players[id].score;
     }
     
-    // *** Messages ***
-    // send a wikipedia article to a specific player
-    sendWikiArticle(sessionId: string, articleTitle: string, language: string = "en") {
-        this.onMessage(new Message("DisplayArticle", {url: "http://" + language + ".wikipedia.org/w/index.php?title=" + encodeURIComponent(articleTitle) + "&printable=yes"}), sessionId);
+    // *** Wiki stuff ***
+    sendRandomWikiArticle(sessionId: string) {
+        getJSONfromURL("https://en.wikipedia.org/w/api.php?origin=*&action=query&format=json&prop=info&inprop=url&generator=random&grnnamespace=0&grnfilterredir=nonredirects&grnlimit=1.json",
+            // callback function: will run once API call is finished
+            (response: any) => {
+                var article: any = Object.values(response.query.pages)[0];
+                console.log(article);
+                // display the page for the player
+                this.sendWikiArticle(sessionId, article.fullurl);
+                // tell player what their article is in chat
+                this.onMessage(new Message("Chat", {message: "Your random article is \'" + article.title + "\'"}), sessionId);
+            }
+        );
     }
     
+    // send a wikipedia article to a specific player
+    sendWikiArticle(sessionId: string, wikiUrl: string, language: string = "en") {
+        this.onMessage(new Message("DisplayArticle", {url: wikiUrl + "?printable=yes"}), sessionId);
+    }
+    
+    // *** Messages ***
     // send updated game status information to all players
     broadcastGameStatus() {
         this.onMessage(new Message("GameStatus", {gamestate: this.gamestate, playstate: this.playstate, round_number: this.round_number, time_left: this.time_left}));
@@ -272,6 +299,8 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
             const res = this.state.setGameState("Lobby");
             if (res === true) { this.handleMessage(new Message("Chat", {message: `Stopping game...`})); }
             else { this.handleMessage(new Message("Chat", {message: `${ res }`})); }
+        } else if (data.message === "/wiki") {
+            this.state.sendRandomWikiArticle(client.sessionId);
         } else if (data.message=="/score increase") {
             this.state.modifyPlayerScore(client.sessionId, 1);
         } else {
