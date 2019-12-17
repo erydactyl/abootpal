@@ -8,7 +8,7 @@ export const CHATMESSAGE_MAX_LENGTH = 256;
 export const NUMBER_OF_ROUNDS_DEFAULT = 1;
 // Timers (all timers are soft by default)
 export const TIMERS_DEFAULT: { [playstate: string] : number; } = {
-    Research: 10,//180,
+    Research: 15,//180,
     Describe: 5,//30,
-    Judge: 15//300
+    Judge: 5//300
 }

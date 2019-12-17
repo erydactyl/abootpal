@@ -20,12 +20,12 @@ function joinGame() {
         console.log("joined");
         
         room.onStateChange.once(function(state) {
-            console.log("initial room state:", state);
+            //console.log("initial room state:", state);
         });
         
         // new room state
         room.onStateChange(function(state) {
-            console.log("Room state updated: ", state)
+            //console.log("Room state updated: ", state)
             document.querySelector("#status-gamestate").innerText = state.gamestate;
             if (state.gamestate === "Playing" || state.gamestate === "Waiting") {
                 document.querySelector("#status-roundnumber").innerText = "Round " + state.round_number;
@@ -37,15 +37,25 @@ function joinGame() {
         
         // listen to patches coming from the server
         room.onMessage(function(message) {
-            var messagesdiv = document.getElementById("messages");
-            const isScrolledToBottom = messagesdiv.scrollHeight - messagesdiv.clientHeight <= messagesdiv.scrollTop + 1;
-            // add message to page
-            var p = document.createElement("p");
-            p.innerText = message;
-            messagesdiv.appendChild(p);
-            // if already scrolled to the bottom, stay at the bottom
-            if (isScrolledToBottom) {
-                messagesdiv.scrollTop = messagesdiv.scrollHeight;
+            console.log(message);
+            // chat message
+            if (message.type === "Chat") {
+                var messagesdiv = document.getElementById("messages");
+                const isScrolledToBottom = messagesdiv.scrollHeight - messagesdiv.clientHeight <= messagesdiv.scrollTop + 1;
+                // add message to page
+                var p = document.createElement("p");
+                p.innerText = message.data.message;
+                messagesdiv.appendChild(p);
+                // if already scrolled to the bottom, stay at the bottom
+                if (isScrolledToBottom) {
+                    messagesdiv.scrollTop = messagesdiv.scrollHeight;
+                }
+            }
+            else if (message.type === "DisplayArticle") {
+                document.querySelector("#wikiframe").src = message.data.url;
+            }
+            else if (message.type === "RemoveArticle") {
+                document.querySelector("#wikiframe").src = "";
             }
         });
         

@@ -3,7 +3,30 @@ import { Schema, type, MapSchema } from "@colyseus/schema";
 import * as Constants from "./constants";
 
 export type GameState = "Waiting" | "Lobby" | "Playing";
-export type PlayState = "Research" | "Describe" | "Judge";
+export type PlayState = "null" | "Research" | "Describe" | "Judge";
+
+export type MessageType = "DisplayArticle" | "RemoveArticle" | "Chat";
+
+export class Message extends Schema {
+    public type: MessageType;
+    public timestamp: number;
+    public data: any;
+    
+    constructor(type: MessageType, data?: any) {
+        super();
+        this.type = type;
+        this.timestamp = Date.now();
+        this.data = data;
+    }
+    
+    get JSON() {
+        return {
+            type: this.type,
+            timestamp: this.timestamp,
+            data: this.data,
+        };
+    }
+}
 
 export class Player extends Schema {
     @type("string")
@@ -24,7 +47,7 @@ export class AbootpalGameState extends Schema {
     @type("string")
     private gamestate: GameState = "Lobby";
     @type("string")
-    private playstate: PlayState = "Research";
+    private playstate: PlayState = "null";
     
     @type({ map: "number" })
     private timers_max: MapSchema<"number"> = new MapSchema<"number">();
@@ -38,6 +61,15 @@ export class AbootpalGameState extends Schema {
     
     @type({ map: Player })
     public players: MapSchema<Player> = new MapSchema<Player>();
+    
+    // messages
+    private onMessage: (message: Message, sessionId?: string) => void;
+    
+    // *** Constructor ***
+    constructor(onMessage: any) {
+        super();
+        this.onMessage = onMessage;
+    }
     
     // *** Utility ***
     // get number of players in room
@@ -61,6 +93,7 @@ export class AbootpalGameState extends Schema {
                 if (this.gamestate != "Playing") { return "Error: Must be in Playing mode to enter Waiting mode"; }
                 
                 this.timeleft = 0;
+                this.playstate = "null";
             } break;
             
             case "Lobby": {
@@ -69,6 +102,7 @@ export class AbootpalGameState extends Schema {
                 
                 this.timeleft = 0;
                 this.round_number = 0;
+                this.playstate = "null";
             } break;
             
             case "Playing": {
@@ -105,10 +139,14 @@ export class AbootpalGameState extends Schema {
         // update room 
         switch(newplaystate) {
             case "Research": {
-                
+                var testArticles = ["January", "Donald_D._Clayton", "Walter_S._Bowman"];
+                for (const sessionId in this.players) {
+                    var a = testArticles[Math.floor(Math.random() * testArticles.length)];
+                    this.sendWikiArticle(sessionId, a);
+                }
             } break;
             case "Describe": {
-                
+                this.onMessage(new Message("RemoveArticle"));
             } break;
             case "Judge": {
                 
@@ -155,6 +193,11 @@ export class AbootpalGameState extends Schema {
         }
     }
     
+    // send a wikipedia article to a specific player
+    sendWikiArticle(sessionId: string, articleTitle: string, language: string = "en") {
+        this.onMessage(new Message("DisplayArticle", {url: "http://" + language + ".wikipedia.org/w/index.php?title=" + encodeURIComponent(articleTitle) + "&printable=yes"}), sessionId);
+    }
+    
     // *** Player management ***
     createPlayer(id: string, nickname: string) {
         this.players[ id ] = new Player(nickname);
@@ -182,7 +225,7 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
     // Listener functions
     onCreate (options: any) {
         console.log("StateHandlerRoom created!", options);
-        this.setState(new AbootpalGameState());
+        this.setState(new AbootpalGameState(this.handleMessage));
         
         // start running
         this.setSimulationInterval(() => this.handleTick());
@@ -196,15 +239,15 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
         }
         this.state.createPlayer(client.sessionId, nickname.slice(0, Constants.NICKNAME_MAX_LENGTH));
         
-        this.broadcast(`${ this.state.getPlayerNickname(client.sessionId) } joined.`);
+        this.handleMessage(new Message("Chat", {message: `${ this.state.getPlayerNickname(client.sessionId) } joined.`}));
         console.log("Join:", client.sessionId, options);
     }
     
     onLeave (client: Client, consented: boolean) {
         if (consented) {
-            this.broadcast(`${ this.state.getPlayerNickname(client.sessionId) } left.`);
+            this.handleMessage(new Message("Chat", {message: `${ this.state.getPlayerNickname(client.sessionId) } left.`}));
         } else {
-            this.broadcast(`${ this.state.getPlayerNickname(client.sessionId) } was disconnected.`);
+            this.handleMessage(new Message("Chat", {message: `${ this.state.getPlayerNickname(client.sessionId) } was disconnected.`}));
         }
         
         // delete player
@@ -215,16 +258,16 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
         console.log("StateHandlerRoom received message from", client.sessionId, "(", this.state.getPlayerNickname(client.sessionId), "):", data);
         if (data.message=="/game start") {
             const res = this.state.setGameState("Playing");
-            if (res === true) { this.broadcast(`Starting game...`); }
-            else { this.broadcast(`${ res }`)}
+            if (res === true) { this.handleMessage(new Message("Chat", {message: `Starting game...`})); }
+            else { this.handleMessage(new Message("Chat", {message: `${ res }`})); }
         } else if (data.message=="/game stop") {
             const res = this.state.setGameState("Lobby");
-            if (res === true) { this.broadcast(`Stopping game...`); }
-            else { this.broadcast(`${ res }`)}
+            if (res === true) { this.handleMessage(new Message("Chat", {message: `Stopping game...`})); }
+            else { this.handleMessage(new Message("Chat", {message: `${ res }`})); }
         } else if (data.message=="/score increase") {
             this.state.modifyPlayerScore(client.sessionId, 1);
         } else {
-            this.broadcast(`[${ this.state.getPlayerNickname(client.sessionId) }] ${ data.message.slice(0, Constants.CHATMESSAGE_MAX_LENGTH) }`);
+            this.handleMessage(new Message("Chat", {message: `[${ this.state.getPlayerNickname(client.sessionId) }] ${ data.message.slice(0, Constants.CHATMESSAGE_MAX_LENGTH) }`}));
         }
     }
     
@@ -232,9 +275,22 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
         console.log("Dispose StateHandlerRoom");
     }
     
+    // handlers
     handleTick = () => {
         this.state.update();
     }
     
+    handleMessage = (message: Message, sessionId?: string) => {
+        //console.log(this.clients);
+        if (sessionId === undefined) {
+            this.broadcast(message.JSON);
+        } else {
+            for (let c = 0; c < this.clients.length; c++) {
+                if (this.clients[c].sessionId === sessionId) {
+                    this.send(this.clients[c], message.JSON);
+                }
+            }
+        }
+    }
 
 }
