@@ -1,5 +1,5 @@
 import { Room, Client } from "colyseus";
-import { Schema, type, MapSchema } from "@colyseus/schema";
+import { Schema, type, ArraySchema, MapSchema } from "@colyseus/schema";
 import * as Constants from "./constants";
 
 var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
@@ -66,6 +66,7 @@ export class AbootpalGameState extends Schema {
     
     @type({ map: Player })
     public players: MapSchema<Player> = new MapSchema<Player>();
+    private judged_this_round: ArraySchema<string> = new ArraySchema<string>();
     
     // messages
     private onMessage: (message: Message, sessionId?: string) => void;
@@ -124,14 +125,13 @@ export class AbootpalGameState extends Schema {
                 for (let ps in Constants.TIMERS_DEFAULT) { this.timers_max[ps] = Constants.TIMERS_DEFAULT[ps]; }
                 // reset last change time in case returning to research from research state before waiting
                 this.last_playstate_change_time = Date.now();
-                // restart round from Research playstate
-                this.setPlayState("Research");
-                
-                // * set up new game *
+                // if starting game from the lobby, game is new, so reset round counter
                 if (this.gamestate === "Lobby") {
                     // reset round number
                     this.round_number = 1;
                 }
+                // restart round from Research playstate
+                this.setPlayState("Research");
             } break;
         }
         
@@ -149,10 +149,37 @@ export class AbootpalGameState extends Schema {
         // update room 
         switch(newplaystate) {
             case "Research": {
-                // testing: send each player a random article
+                // choose a judge for the turn
+                // the first person in 'players' but not in 'judged_this_round'
+                const num_judged_this_round = this.judged_this_round.length
                 for (const sessionId in this.players) {
-                    //var article = 
-                    //this.sendWikiArticle(sessionId, a);
+                    if (this.judged_this_round.indexOf(sessionId) === -1) {
+                        this.judged_this_round.push(sessionId);
+                        break; // exit loop
+                    }
+                }
+                // if length of judged_this_round is unchanged, all players have judged
+                // so start a new round
+                if (num_judged_this_round === this.judged_this_round.length) {
+                    // announce new round
+                    this.round_number++;
+                    this.onMessage(new Message("Chat", {message: "Starting round " + this.round_number + "!"}));
+                    // clear judged this round, and choose first player as new judge
+                    this.judged_this_round = new ArraySchema<string>();
+                    for (const sessionId in this.players) {
+                        this.judged_this_round.push(sessionId);
+                        break; // no conditional - will always break on first iteration
+                    }
+                }
+                
+                // announce the judge
+                this.onMessage(new Message("Chat", {message: this.players[this.judged_this_round[this.judged_this_round.length - 1]].nickname + " is judging!"}));
+                
+                // send each non-judging player a random article
+                for (const sessionId in this.players) {
+                    // skip the judge
+                    if (sessionId === this.judged_this_round[this.judged_this_round.length - 1]) { continue; }
+                    this.sendRandomWikiArticle(sessionId);
                 }
             } break;
             case "Describe": {
@@ -200,7 +227,7 @@ export class AbootpalGameState extends Schema {
                         if (this.time_left <= 0) { this.setPlayState("Judge"); }
                     } break;
                     case "Judge": {
-                        if (this.time_left <= 0) { this.setPlayState("Research"); this.round_number++;}
+                        if (this.time_left <= 0) { this.setPlayState("Research"); }
                     } break;
                 }
             } break;
@@ -233,7 +260,7 @@ export class AbootpalGameState extends Schema {
             // callback function: will run once API call is finished
             (response: any) => {
                 var article: any = Object.values(response.query.pages)[0];
-                console.log(article);
+                //console.log(article);
                 // display the page for the player
                 this.sendWikiArticle(sessionId, article.fullurl);
                 // tell player what their article is in chat
