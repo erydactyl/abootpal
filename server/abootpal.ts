@@ -7,7 +7,7 @@ var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
 export type GameState = "Waiting" | "Lobby" | "Playing";
 export type PlayState = "null" | "ChooseArticle" | "Research" | "Describe" | "Judge" | "Scores";
 
-export type MessageType = "GameStatus" | "DisplayArticle" | "RemoveArticle" | "Chat";
+export type MessageType = "GameStatus" | "DisplayArticleTitle" | "DisplayArticle" | "RemoveArticle" | "Chat";
 
 export function getJSONfromURL(url: string, callback: any) {
     var xhr = new XMLHttpRequest();
@@ -69,6 +69,10 @@ export class AbootpalGameState extends Schema {
     
     // messages
     private onMessage: (message: Message, sessionId?: string) => void;
+    
+    // wiki
+    private truth_player: string = "";
+    private article: any = undefined;
     
     // *** Constructor ***
     constructor(onMessage: any) {
@@ -148,9 +152,6 @@ export class AbootpalGameState extends Schema {
         // update room 
         switch(newplaystate) {
             case "ChooseArticle": {
-                
-            } break;
-            case "Research": {
                 // choose a judge for the turn
                 // the first person in 'players' but not in 'judged_this_round'
                 const num_judged_this_round = this.judged_this_round.length
@@ -160,8 +161,9 @@ export class AbootpalGameState extends Schema {
                         break; // exit loop
                     }
                 }
+                
                 // if length of judged_this_round is unchanged, all players have judged
-                // so start a new round
+                // so start a new round, and make first player the judge
                 if (num_judged_this_round === this.judged_this_round.length) {
                     // announce new round
                     this.round_number++;
@@ -177,21 +179,52 @@ export class AbootpalGameState extends Schema {
                 // announce the judge
                 this.onMessage(new Message("Chat", {message: this.players[this.judged_this_round[this.judged_this_round.length - 1]].nickname + " is judging!"}));
                 
-                // send each non-judging player a random article
-                for (const sessionId in this.players) {
-                    // skip the judge
-                    if (sessionId === this.judged_this_round[this.judged_this_round.length - 1]) { continue; }
-                    this.sendRandomWikiArticle(sessionId);
+                // choose a random article, and propose it to the players
+                this.chooseRandomWikiArticle(
+                    (response: any) => {
+                        this.article = response;
+                        console.log(this.article);
+                        
+                        // send article title to all players (except judge)
+                        for (const sessionId in this.players) {
+                        if (sessionId !== this.judged_this_round[this.judged_this_round.length - 1]) {
+                            this.sendWikiArticleTitle(sessionId, this.article.title);
+                        }
+                    }
+                    }
+                );
+            } break;
+            case "Research": {
+                // clear screens
+                this.onMessage(new Message("RemoveArticle"));
+                
+                // hopefully enough time has passed for the XHR to have completed
+                if (this.article != undefined) {
+                    // choose which player will see the full article at random
+                    var ps = Object.keys(this.players).filter((e: any) => { return e !== this.judged_this_round[this.judged_this_round.length - 1] });
+                    this.truth_player = ps[Math.floor(Math.random()*ps.length)];
+                    
+                    // send article to truth-telling player
+                    this.sendWikiArticle(this.truth_player, this.article.fullurl);
+                    // send article title to all other non-judge players
+                    for (const sessionId in this.players) {
+                        if (sessionId !== this.truth_player && sessionId !== this.judged_this_round[this.judged_this_round.length - 1]) {
+                            this.sendWikiArticleTitle(sessionId, this.article.title);
+                        }
+                    }
                 }
             } break;
             case "Describe": {
+                // clear screens
                 this.onMessage(new Message("RemoveArticle"));
             } break;
             case "Judge": {
                 
             } break;
             case "Scores": {
-                
+                // reset article & truth-telling player
+                this.truth_player = "";
+                this.article = undefined;
             } break;
             case "null": {
                 
@@ -269,23 +302,24 @@ export class AbootpalGameState extends Schema {
     }
     
     // *** Wiki stuff ***
-    sendRandomWikiArticle(sessionId: string) {
+    chooseRandomWikiArticle(callback: any) {
         getJSONfromURL("https://en.wikipedia.org/w/api.php?origin=*&action=query&format=json&prop=info&inprop=url&generator=random&grnnamespace=0&grnfilterredir=nonredirects&grnlimit=1.json",
             // callback function: will run once API call is finished
             (response: any) => {
-                var article: any = Object.values(response.query.pages)[0];
-                //console.log(article);
-                // display the page for the player
-                this.sendWikiArticle(sessionId, article.fullurl);
-                // tell player what their article is in chat
-                this.onMessage(new Message("Chat", {message: "Your random article is \'" + article.title + "\'"}), sessionId);
+                // pass article back
+                callback(Object.values(response.query.pages)[0]);
             }
         );
     }
     
     // send a wikipedia article to a specific player
-    sendWikiArticle(sessionId: string, wikiUrl: string, language: string = "en") {
+    sendWikiArticle(sessionId: string, wikiUrl: string) {
         this.onMessage(new Message("DisplayArticle", {url: wikiUrl + "?printable=yes"}), sessionId);
+    }
+    
+    // send a wikipedia article title to a specific player
+    sendWikiArticleTitle(sessionId: string, wikiTitle: string) {
+        this.onMessage(new Message("DisplayArticleTitle", {title: wikiTitle}), sessionId);
     }
     
     // *** Messages ***
@@ -340,8 +374,6 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
             const res = this.state.setGameState("Lobby");
             if (res === true) { this.handleMessage(new Message("Chat", {message: `Stopping game...`})); }
             else { this.handleMessage(new Message("Chat", {message: `${ res }`})); }
-        } else if (data.message === "/wiki") {
-            this.state.sendRandomWikiArticle(client.sessionId);
         } else if (data.message=="/score increase") {
             this.state.modifyPlayerScore(client.sessionId, 1);
         } else {

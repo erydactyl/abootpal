@@ -58,8 +58,13 @@ function joinGame() {
             else if (message.type === "DisplayArticle") {
                 document.querySelector("#wikiframe").src = message.data.url;
             }
+            // display article message
+            else if (message.type === "DisplayArticleTitle") {
+                document.querySelector("#maingame").innerText = message.data.title;
+            }
             // remove article message
             else if (message.type === "RemoveArticle") {
+                document.querySelector("#maingame").innerText = "";
                 document.querySelector("#wikiframe").src = "";
             }
         });
