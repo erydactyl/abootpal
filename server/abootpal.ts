@@ -5,13 +5,12 @@ import * as Constants from "./constants";
 var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
 
 export type GameState = "Waiting" | "Lobby" | "Playing";
-export type PlayState = "null" | "Research" | "Describe" | "Judge";
+export type PlayState = "null" | "ChooseArticle" | "Research" | "Describe" | "Judge" | "Scores";
 
 export type MessageType = "GameStatus" | "DisplayArticle" | "RemoveArticle" | "Chat";
 
 export function getJSONfromURL(url: string, callback: any) {
     var xhr = new XMLHttpRequest();
-    var res: any;
     xhr.open("GET", url, true);
     xhr.onload = function() {
         callback(JSON.parse(xhr.responseText));
@@ -104,7 +103,7 @@ export class AbootpalGameState extends Schema {
                 // only change to Waiting if currently in Playing
                 if (this.gamestate != "Playing") { return "Error: Must be in Playing mode to enter Waiting mode"; }
                 
-                this.playstate = "null";
+                this.setPlayState("null");
             } break;
             
             case "Lobby": {
@@ -112,7 +111,7 @@ export class AbootpalGameState extends Schema {
                 // none
                 
                 this.round_number = 0;
-                this.playstate = "null";
+                this.setPlayState("null");
             } break;
             
             case "Playing": {
@@ -130,8 +129,8 @@ export class AbootpalGameState extends Schema {
                     // reset round number
                     this.round_number = 1;
                 }
-                // restart round from Research playstate
-                this.setPlayState("Research");
+                // (re)start round from Scores playstate
+                this.setPlayState("Scores");
             } break;
         }
         
@@ -148,6 +147,9 @@ export class AbootpalGameState extends Schema {
         
         // update room 
         switch(newplaystate) {
+            case "ChooseArticle": {
+                
+            } break;
             case "Research": {
                 // choose a judge for the turn
                 // the first person in 'players' but not in 'judged_this_round'
@@ -188,6 +190,12 @@ export class AbootpalGameState extends Schema {
             case "Judge": {
                 
             } break;
+            case "Scores": {
+                
+            } break;
+            case "null": {
+                
+            } break;
         }
         
         // update state
@@ -220,6 +228,9 @@ export class AbootpalGameState extends Schema {
                 
                 // state-specific logic
                 switch(this.playstate) {
+                    case "ChooseArticle": {
+                        if (this.time_left <= 0) { this.setPlayState("Research"); }
+                    } break;
                     case "Research": {
                         if (this.time_left <= 0) { this.setPlayState("Describe"); }
                     } break;
@@ -227,7 +238,10 @@ export class AbootpalGameState extends Schema {
                         if (this.time_left <= 0) { this.setPlayState("Judge"); }
                     } break;
                     case "Judge": {
-                        if (this.time_left <= 0) { this.setPlayState("Research"); }
+                        if (this.time_left <= 0) { this.setPlayState("Scores"); }
+                    } break;
+                    case "Scores": {
+                        if (this.time_left <= 0) { this.setPlayState("ChooseArticle"); }
                     } break;
                 }
             } break;
