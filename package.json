@@ -6,7 +6,7 @@
   "author": "Dylan J. White",
   "license": "UNLICENSED",
   "scripts": {
-    "start": "ts-node index.ts",
+    "start": "npm install; ts-node index.ts",
     "heroku-postbuild": "npm run build"
   },
   "bugs": {
