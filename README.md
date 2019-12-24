@@ -41,4 +41,4 @@ If you're running on Windows 10, you can install the Ubuntu subsystem and follow
 
 ### Setting up the repository
 
-Clone the repo to wherever you like, and run it with `npm start`.
+Clone the repo, and enter into the folder created. The first time you run this, you will need to run `npm install` to set up all the packages required for the game. Following this, the game server is launched by running `npm start`.
