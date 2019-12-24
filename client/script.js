@@ -9,15 +9,15 @@ function joinGame() {
     
     console.log("selected nickname", nick.value);
     
-    document.getElementById("nickname").style.display = "none";
-    document.getElementById("body").style.display = "block";
-    
     var playerscores = {};
     
     var room;
     client.joinOrCreate("abootpal", {nickname: nick.value}).then(room_instance => {
         room = room_instance;
         console.log("joined");
+        
+        document.getElementById("nickname").style.display = "none";
+        document.getElementById("body").style.display = "block";
         
         room.onStateChange.once(function(state) {
             //console.log("initial room state:", state);
@@ -56,6 +56,10 @@ function joinGame() {
             }
             // display article message
             else if (message.type === "DisplayArticle") {
+                // show wiki iframe
+                document.querySelector("#wikiframe").visibility = "visible";
+                document.querySelector("#wikiframe").height = "100%";
+                // display article
                 document.querySelector("#wikiframe").src = message.data.url;
             }
             // display article message
@@ -66,6 +70,9 @@ function joinGame() {
             else if (message.type === "RemoveArticle") {
                 document.querySelector("#maingame").innerText = "";
                 document.querySelector("#wikiframe").src = "";
+                // hide wiki iframe
+                document.querySelector("#wikiframe").visibility = "hidden";
+                document.querySelector("#wikiframe").height = "0px";
             }
         });
         
