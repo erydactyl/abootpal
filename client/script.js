@@ -63,14 +63,24 @@ function joinGame() {
                 document.querySelector("#wikiframe").src = message.data.url;
             }
             // display article message
-            else if (message.type === "DisplayArticleTitle") {
-                document.querySelector("#maingame").innerText = message.data.title;
+            else if (message.type === "DisplayText") {
+                var ptext = document.createElement("p");
+                ptext.style.width = "100%";
+                ptext.style.height = "32";
+                ptext.innerText = message.data.text;
+                document.querySelector("#maingame").appendChild(ptext);
             }
             // remove article message
-            else if (message.type === "RemoveArticle") {
-                document.querySelector("#maingame").innerText = "";
+            else if (message.type === "ClearDisplay") {
+                // remove child elements from main display
+                const parent = document.getElementById("maingame");
+                while (parent.firstChild) {
+                    parent.removeChild(parent.firstChild);
+                }
+
+                // wiki iframe
                 document.querySelector("#wikiframe").src = "";
-                // hide wiki iframe
+                // hide
                 document.querySelector("#wikiframe").visibility = "hidden";
                 document.querySelector("#wikiframe").height = "0px";
             }

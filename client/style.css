@@ -133,6 +133,19 @@ body {
     background-color: #ffffff;
 }
 
+#maingame {
+    width: 100%;
+}
+
+#maingame p {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    font-weight: normal;
+
+    text-align: center;
+    margin: 0px 0px 0px 4px;
+}
+
 #wikiframe {
     float: right;
     width: 98%;

@@ -7,7 +7,7 @@ var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
 export type GameState = "Waiting" | "Lobby" | "Playing";
 export type PlayState = "null" | "ChooseArticle" | "Research" | "Describe" | "Judge" | "Scores";
 
-export type MessageType = "GameStatus" | "DisplayArticleTitle" | "DisplayArticle" | "RemoveArticle" | "Chat";
+export type MessageType = "GameStatus" | "DisplayText" | "DisplayArticle" | "ClearDisplay" | "Chat";
 
 export function getJSONfromURL(url: string, callback: any) {
     var xhr = new XMLHttpRequest();
@@ -188,7 +188,8 @@ export class AbootpalGameState extends Schema {
                         // send article title to all players (except judge)
                         for (const sessionId in this.players) {
                         if (sessionId !== this.judged_this_round[this.judged_this_round.length - 1]) {
-                            this.sendWikiArticleTitle(sessionId, this.article.title);
+        					this.onMessage(new Message("DisplayText", {text: "Proposed article title:"}), sessionId);
+        					this.onMessage(new Message("DisplayText", {text: this.article.title}), sessionId);
                         }
                     }
                     }
@@ -196,7 +197,7 @@ export class AbootpalGameState extends Schema {
             } break;
             case "Research": {
                 // clear screens
-                this.onMessage(new Message("RemoveArticle"));
+                this.onMessage(new Message("ClearDisplay"));
                 
                 // hopefully enough time has passed for the XHR to have completed
                 if (this.article != undefined) {
@@ -209,14 +210,16 @@ export class AbootpalGameState extends Schema {
                     // send article title to all other non-judge players
                     for (const sessionId in this.players) {
                         if (sessionId !== this.truth_player && sessionId !== this.judged_this_round[this.judged_this_round.length - 1]) {
-                            this.sendWikiArticleTitle(sessionId, this.article.title);
+        					this.onMessage(new Message("DisplayText", {text: "This round\'s article title is"}), sessionId);
+        					this.onMessage(new Message("DisplayText", {text: this.article.title}), sessionId);
+        					this.onMessage(new Message("DisplayText", {text: "Make up something based on this title!"}), sessionId);
                         }
                     }
                 }
             } break;
             case "Describe": {
                 // clear screens
-                this.onMessage(new Message("RemoveArticle"));
+                this.onMessage(new Message("ClearDisplay"));
             } break;
             case "Judge": {
                 
@@ -315,11 +318,6 @@ export class AbootpalGameState extends Schema {
     // send a wikipedia article to a specific player
     sendWikiArticle(sessionId: string, wikiUrl: string) {
         this.onMessage(new Message("DisplayArticle", {url: wikiUrl + "?printable=yes"}), sessionId);
-    }
-    
-    // send a wikipedia article title to a specific player
-    sendWikiArticleTitle(sessionId: string, wikiTitle: string) {
-        this.onMessage(new Message("DisplayArticleTitle", {title: wikiTitle}), sessionId);
     }
     
     // *** Messages ***
