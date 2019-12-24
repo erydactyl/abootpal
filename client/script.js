@@ -32,12 +32,12 @@ function joinGame() {
         room.onMessage(function(message) {
             console.log(message);
             // chat message
-            if (message.type === "Chat") {
+            if (message.type === "ChatMessage") {
                 var messagesdiv = document.getElementById("messages");
                 const isScrolledToBottom = messagesdiv.scrollHeight - messagesdiv.clientHeight <= messagesdiv.scrollTop + 1;
                 // add message to page
                 var p = document.createElement("p");
-                p.innerText = message.data.message;
+                p.innerText = message.data.chatmessage;
                 messagesdiv.appendChild(p);
                 // if already scrolled to the bottom, stay at the bottom
                 if (isScrolledToBottom) {
@@ -113,13 +113,13 @@ function joinGame() {
         }
         
         // send message to room on submit
-        document.querySelector("#form-message").onsubmit = function(e) {
+        document.querySelector("#form-chat-message").onsubmit = function(e) {
             e.preventDefault();
-            var input = document.querySelector("#input-message");
+            var input = document.querySelector("#input-chat-message");
             if (input.value == "") { return false; } // don't send empty messages
             console.log("input message:", input.value);
             // send data to room
-            room.send({ message: input.value });
+            room.send({ chatmessage: input.value });
             // clear input
             input.value = "";
         }

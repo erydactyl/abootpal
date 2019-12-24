@@ -163,14 +163,14 @@ body {
     margin: 4px 0px 0px 4px;
 }
 
-#message {
+#chat-message {
     width: 100%;
     height: 32px;
     
     text-align: center;
 }
 
-#message form {
+#chat-message form {
     display: inline-block;
     text-align: left;
     
@@ -179,6 +179,6 @@ body {
     margin-right: auto;
 }
 
-#input-message {
+#input-chat-message {
     width: 434px;
 }

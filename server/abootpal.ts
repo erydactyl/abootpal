@@ -7,7 +7,7 @@ var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
 export type GameState = "Waiting" | "Lobby" | "Playing";
 export type PlayState = "null" | "ChooseArticle" | "Research" | "Describe" | "Judge" | "Scores";
 
-export type MessageType = "GameStatus" | "DisplayText" | "DisplayArticle" | "ClearDisplay" | "Chat";
+export type MessageType = "GameStatus" | "DisplayText" | "DisplayArticle" | "ClearDisplay" | "ChatMessage";
 
 export function getJSONfromURL(url: string, callback: any) {
     var xhr = new XMLHttpRequest();
@@ -167,7 +167,7 @@ export class AbootpalGameState extends Schema {
                 if (num_judged_this_round === this.judged_this_round.length) {
                     // announce new round
                     this.round_number++;
-                    this.onMessage(new Message("Chat", {message: "Starting round " + this.round_number + "!"}));
+                    this.onMessage(new Message("ChatMessage", {chatmessage: "Starting round " + this.round_number + "!"}));
                     // clear judged this round, and choose first player as new judge
                     this.judged_this_round = new ArraySchema<string>();
                     for (const sessionId in this.players) {
@@ -177,7 +177,7 @@ export class AbootpalGameState extends Schema {
                 }
                 
                 // announce the judge
-                this.onMessage(new Message("Chat", {message: this.players[this.judged_this_round[this.judged_this_round.length - 1]].nickname + " is judging!"}));
+                this.onMessage(new Message("ChatMessage", {chatmessage: this.players[this.judged_this_round[this.judged_this_round.length - 1]].nickname + " is judging!"}));
                 
                 // choose a random article, and propose it to the players
                 this.chooseRandomWikiArticle(
@@ -347,15 +347,15 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
         }
         this.state.createPlayer(client.sessionId, nickname.slice(0, Constants.NICKNAME_MAX_LENGTH));
         
-        this.handleMessage(new Message("Chat", {message: `${ this.state.getPlayerNickname(client.sessionId) } joined.`}));
+        this.handleMessage(new Message("ChatMessage", {chatmessage: `${ this.state.getPlayerNickname(client.sessionId) } joined.`}));
         console.log("Join:", client.sessionId, options);
     }
     
     onLeave (client: Client, consented: boolean) {
         if (consented) {
-            this.handleMessage(new Message("Chat", {message: `${ this.state.getPlayerNickname(client.sessionId) } left.`}));
+            this.handleMessage(new Message("ChatMessage", {chatmessage: `${ this.state.getPlayerNickname(client.sessionId) } left.`}));
         } else {
-            this.handleMessage(new Message("Chat", {message: `${ this.state.getPlayerNickname(client.sessionId) } was disconnected.`}));
+            this.handleMessage(new Message("ChatMessage", {chatmessage: `${ this.state.getPlayerNickname(client.sessionId) } was disconnected.`}));
         }
         
         // delete player
@@ -363,20 +363,23 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
     }
     
     onMessage (client: Client, data: any) {
+    	console.log("Test");
         console.log("StateHandlerRoom received message from", client.sessionId, "(", this.state.getPlayerNickname(client.sessionId), "):", data);
-        if (data.message=="/game start") {
-            const res = this.state.setGameState("Playing");
-            if (res === true) { this.handleMessage(new Message("Chat", {message: `Starting game...`})); }
-            else { this.handleMessage(new Message("Chat", {message: `${ res }`})); }
-        } else if (data.message=="/game stop") {
-            const res = this.state.setGameState("Lobby");
-            if (res === true) { this.handleMessage(new Message("Chat", {message: `Stopping game...`})); }
-            else { this.handleMessage(new Message("Chat", {message: `${ res }`})); }
-        } else if (data.message=="/score increase") {
-            this.state.modifyPlayerScore(client.sessionId, 1);
-        } else {
-            this.handleMessage(new Message("Chat", {message: `[${ this.state.getPlayerNickname(client.sessionId) }] ${ data.message.slice(0, Constants.CHATMESSAGE_MAX_LENGTH) }`}));
-        }
+        if (data.chatmessage) {
+	        if (data.chatmessage=="/game start") {
+	            const res = this.state.setGameState("Playing");
+	            if (res === true) { this.handleMessage(new Message("ChatMessage", {chatmessage: `Starting game...`})); }
+	            else { this.handleMessage(new Message("ChatMessage", {chatmessage: `${ res }`})); }
+	        } else if (data.chatmessage=="/game stop") {
+	            const res = this.state.setGameState("Lobby");
+	            if (res === true) { this.handleMessage(new Message("ChatMessage", {chatmessage: `Stopping game...`})); }
+	            else { this.handleMessage(new Message("ChatMessage", {chatmessage: `${ res }`})); }
+	        } else if (data.chatmessage=="/score increase") {
+	            this.state.modifyPlayerScore(client.sessionId, 1);
+	        } else {
+	            this.handleMessage(new Message("ChatMessage", {chatmessage: `[${ this.state.getPlayerNickname(client.sessionId) }] ${ data.chatmessage.slice(0, Constants.CHATMESSAGE_MAX_LENGTH) }`}));
+	        }
+	    }
     }
     
     onDispose() {
