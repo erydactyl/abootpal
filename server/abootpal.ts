@@ -189,7 +189,7 @@ export class AbootpalGameState extends Schema {
                         for (const sessionId in this.players) {
                         if (sessionId !== this.judged_this_round[this.judged_this_round.length - 1]) {
         					this.onMessage(new Message("DisplayText", {text: "Proposed article title:"}), sessionId);
-        					this.onMessage(new Message("DisplayText", {text: this.article.title}), sessionId);
+        					this.onMessage(new Message("DisplayText", {text: this.article.title, fontweight: "bold", fontsize: "24px"}), sessionId);
                         }
                     }
                     }
@@ -211,7 +211,7 @@ export class AbootpalGameState extends Schema {
                     for (const sessionId in this.players) {
                         if (sessionId !== this.truth_player && sessionId !== this.judged_this_round[this.judged_this_round.length - 1]) {
         					this.onMessage(new Message("DisplayText", {text: "This round\'s article title is"}), sessionId);
-        					this.onMessage(new Message("DisplayText", {text: this.article.title}), sessionId);
+        					this.onMessage(new Message("DisplayText", {text: this.article.title, fontweight: "bold", fontsize: "24px"}), sessionId);
         					this.onMessage(new Message("DisplayText", {text: "Make up something based on this title!"}), sessionId);
                         }
                     }

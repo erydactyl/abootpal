@@ -38,6 +38,8 @@ function joinGame() {
                 // add message to page
                 var p = document.createElement("p");
                 p.innerText = message.data.chatmessage;
+                if (message.data.fontweight) p.style.fontWeight = message.data.fontweight;
+                if (message.data.fontsize) p.style.fontSize = message.data.fontsize;
                 messagesdiv.appendChild(p);
                 // if already scrolled to the bottom, stay at the bottom
                 if (isScrolledToBottom) {
@@ -68,6 +70,8 @@ function joinGame() {
                 ptext.style.width = "100%";
                 ptext.style.height = "32";
                 ptext.innerText = message.data.text;
+                if (message.data.fontweight) ptext.style.fontWeight = message.data.fontweight;
+                if (message.data.fontsize) ptext.style.fontSize = message.data.fontsize;
                 document.querySelector("#maingame").appendChild(ptext);
             }
             // remove article message
