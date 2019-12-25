@@ -74,6 +74,33 @@ function joinGame() {
                 if (message.data.fontsize) ptext.style.fontSize = message.data.fontsize;
                 document.querySelector("#maingame").appendChild(ptext);
             }
+            // display approve/reject article form
+            else if (message.type === "DisplayApproveRejectButtons") {
+                var inapprove = document.createElement("input");
+                inapprove.id = "input-approve-article";
+                inapprove.type = "button";
+                inapprove.value = "Approve";
+                var inreject = document.createElement("input");
+                inreject.id = "input-reject-article";
+                inreject.type = "button";
+                inreject.value = "Reject";
+                inapprove.onclick = function() {
+                    // style
+                    document.querySelector("#input-approve-article").style.border = "3px solid #444444";
+                    document.querySelector("#input-reject-article").style.border = "3px solid transparent";
+                    // send approve/reject information
+                    room.send({ choosearticle: "approve" });
+                }
+                inreject.onclick = function() {
+                    // style
+                    document.querySelector("#input-approve-article").style.border = "3px solid transparent";
+                    document.querySelector("#input-reject-article").style.border = "3px solid #444444";
+                    // send approve/reject information
+                    room.send({ choosearticle: "reject" });
+                }
+                document.querySelector("#maingame").appendChild(inapprove);
+                document.querySelector("#maingame").appendChild(inreject);
+            }
             // remove article message
             else if (message.type === "ClearDisplay") {
                 // remove child elements from main display

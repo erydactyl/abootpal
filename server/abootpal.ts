@@ -7,7 +7,7 @@ var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
 export type GameState = "Waiting" | "Lobby" | "Playing";
 export type PlayState = "null" | "ChooseArticle" | "Research" | "Describe" | "Judge" | "Scores";
 
-export type MessageType = "GameStatus" | "DisplayText" | "DisplayArticle" | "ClearDisplay" | "ChatMessage";
+export type MessageType = "GameStatus" | "DisplayText" | "DisplayApproveRejectButtons" | "DisplayArticle"| "ClearDisplay" | "ChatMessage";
 
 export function getJSONfromURL(url: string, callback: any) {
     var xhr = new XMLHttpRequest();
@@ -84,6 +84,7 @@ export class AbootpalGameState extends Schema {
     // wiki
     private truth_player: string = "";
     private article: Article = new Article("", "");
+    private article_decisions: MapSchema<"string"> = new MapSchema<"string">();
     
     // *** Constructor ***
     constructor(onMessage: any) {
@@ -156,40 +157,46 @@ export class AbootpalGameState extends Schema {
     }
     
     // set the state during a game
-    setPlayState(newplaystate: PlayState) {
-        // don't update if already in desired state
-        if (newplaystate === this.playstate) { return; }
+    setPlayState(newplaystate: PlayState, restart: boolean = false) {
+        // don't update if already in desired state (unless restart is specified)
+        if (!restart && newplaystate === this.playstate) { return; }
         
         // update room 
         switch(newplaystate) {
             case "ChooseArticle": {
-                // choose a judge for the turn
-                // the first person in 'players' but not in 'judged_this_round'
-                const num_judged_this_round = this.judged_this_round.length
-                for (const sessionId in this.players) {
-                    if (this.judged_this_round.indexOf(sessionId) === -1) {
-                        this.judged_this_round.push(sessionId);
-                        break; // exit loop
-                    }
+                // clear screens
+                this.onMessage(new Message("ClearDisplay"));
+
+	            // on a new turn, choose a new judge
+            	if (!restart) {
+	                // the first person in 'players' but not in 'judged_this_round'
+	                const num_judged_this_round = this.judged_this_round.length
+	                for (const sessionId in this.players) {
+	                    if (this.judged_this_round.indexOf(sessionId) === -1) {
+	                        this.judged_this_round.push(sessionId);
+	                        break; // exit loop
+	                    }
+	                }
+	                
+	                // if length of judged_this_round is unchanged, all players have judged
+	                // so start a new round, and make first player the judge
+	                if (num_judged_this_round === this.judged_this_round.length) {
+	                    // announce new round
+	                    this.round_number++;
+	                    this.onMessage(new Message("ChatMessage", {chatmessage: "Starting round " + this.round_number + "!"}));
+	                    // clear judged this round, and choose first player as new judge
+	                    this.judged_this_round = new ArraySchema<string>();
+	                    for (const sessionId in this.players) {
+	                        this.judged_this_round.push(sessionId);
+	                        break; // no conditional - will always break on first iteration
+	                    }
+	                }
+	                
+	                // announce the judge
+	                this.onMessage(new Message("ChatMessage", {chatmessage: this.players[this.judged_this_round[this.judged_this_round.length - 1]].nickname + " is judging!"}));
+        			this.onMessage(new Message("DisplayText", {text: "You are judging!"}), this.judged_this_round[this.judged_this_round.length - 1]);
                 }
-                
-                // if length of judged_this_round is unchanged, all players have judged
-                // so start a new round, and make first player the judge
-                if (num_judged_this_round === this.judged_this_round.length) {
-                    // announce new round
-                    this.round_number++;
-                    this.onMessage(new Message("ChatMessage", {chatmessage: "Starting round " + this.round_number + "!"}));
-                    // clear judged this round, and choose first player as new judge
-                    this.judged_this_round = new ArraySchema<string>();
-                    for (const sessionId in this.players) {
-                        this.judged_this_round.push(sessionId);
-                        break; // no conditional - will always break on first iteration
-                    }
-                }
-                
-                // announce the judge
-                this.onMessage(new Message("ChatMessage", {chatmessage: this.players[this.judged_this_round[this.judged_this_round.length - 1]].nickname + " is judging!"}));
-                
+
                 // choose a random article, and propose it to the players
                 this.chooseRandomWikiArticle(
                     (response: any) => {
@@ -199,8 +206,11 @@ export class AbootpalGameState extends Schema {
                         // send article title to all players (except judge)
                         for (const sessionId in this.players) {
                         if (sessionId !== this.judged_this_round[this.judged_this_round.length - 1]) {
+                        	if (restart) { this.onMessage(new Message("DisplayText", {text: "Article rejected - choosing a new one..."}), sessionId); }
         					this.onMessage(new Message("DisplayText", {text: "Proposed article title:"}), sessionId);
         					this.onMessage(new Message("DisplayText", {text: this.article.title, fontweight: "bold", fontsize: "24px"}), sessionId);
+        					this.onMessage(new Message("DisplayApproveRejectButtons"), sessionId);
+        					this.onMessage(new Message("DisplayText", {text: `To continue with this article, at least ${Math.floor(100*Constants.ARTICLE_MIN_APPROVE_FRAC)}% of players must approve it, and none must reject it`, fontsize: "16px"}), sessionId);
                         }
                     }
                     }
@@ -236,9 +246,10 @@ export class AbootpalGameState extends Schema {
                 
             } break;
             case "Scores": {
-                // reset article & truth-telling player
+                // reset variables that need resetting for a new rond
                 this.truth_player = "";
                 this.article = new Article("", "");
+                this.article_decisions = new MapSchema<"string">();
             } break;
             case "null": {
                 
@@ -276,7 +287,26 @@ export class AbootpalGameState extends Schema {
                 // state-specific logic
                 switch(this.playstate) {
                     case "ChooseArticle": {
-                        if (this.time_left <= 0) { this.setPlayState("Research"); }
+                        if (this.time_left <= 0) {
+                        	// check for any rejections
+                        	var should_reject = false;
+                        	var approve_count = 0;
+                			for (const sessionId in this.article_decisions) {
+                				// reject if anyone selected reject
+                				if (this.article_decisions[sessionId] === "reject") {
+                					should_reject = true;
+                					break;
+                				} else { approve_count++; }
+                			}
+                			// reject if less than ARTICLE_MIN_APPROVE_FRAC of non-judge players approve
+                			if (approve_count < Constants.ARTICLE_MIN_APPROVE_FRAC * (this.players_count - 1)) { should_reject = true; }
+                			// if rejecting, restart round
+                			if (should_reject) {
+                				this.article_decisions = new MapSchema<"string">();
+                				this.setPlayState("ChooseArticle", true);
+                			// otherwise, continue to research phase
+                			} else { this.setPlayState("Research"); }
+                        }
                     } break;
                     case "Research": {
                         if (this.time_left <= 0) { this.setPlayState("Describe"); }
@@ -330,6 +360,14 @@ export class AbootpalGameState extends Schema {
     sendWikiArticle(sessionId: string, wikiUrl: string) {
         this.onMessage(new Message("DisplayArticle", {url: wikiUrl + "?printable=yes"}), sessionId);
     }
+
+    // approval/rejection of articles
+    setArticleDecision(sessionId: string, choice: string) {
+    	if (choice === "approve" || choice === "reject" ) {
+    		this.article_decisions[sessionId] = choice;
+    	}
+    	console.log(this.article_decisions);
+    }
     
     // *** Messages ***
     // send updated game status information to all players
@@ -374,8 +412,8 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
     }
     
     onMessage (client: Client, data: any) {
-    	console.log("Test");
         console.log("StateHandlerRoom received message from", client.sessionId, "(", this.state.getPlayerNickname(client.sessionId), "):", data);
+        // handle chat messages
         if (data.chatmessage) {
 	        if (data.chatmessage=="/game start") {
 	            const res = this.state.setGameState("Playing");
@@ -387,9 +425,17 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
 	            else { this.handleMessage(new Message("ChatMessage", {chatmessage: `${ res }`})); }
 	        } else if (data.chatmessage=="/score increase") {
 	            this.state.modifyPlayerScore(client.sessionId, 1);
+	        } else if (data.chatmessage=="/buttons") {
+	        	this.handleMessage(new Message("DisplayApproveRejectButtons"), client.sessionId);
 	        } else {
 	            this.handleMessage(new Message("ChatMessage", {chatmessage: `[${ this.state.getPlayerNickname(client.sessionId) }] ${ data.chatmessage.slice(0, Constants.CHATMESSAGE_MAX_LENGTH) }`}));
 	        }
+	    }
+	    // handle approving/rejecting articles
+	    else if (data.choosearticle) {
+	    	if (data.choosearticle === "approve" || data.choosearticle === "reject") {
+	    		this.state.setArticleDecision(client.sessionId, data.choosearticle);
+	    	}
 	    }
     }
     
