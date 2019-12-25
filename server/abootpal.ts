@@ -39,6 +39,17 @@ export class Message extends Schema {
     }
 }
 
+export class Article extends Schema {
+	public title: string;
+	public url: string;
+
+	constructor(title: string, url: string) {
+		super();
+		this.title = title;
+		this.url = url;
+	}
+}
+
 export class Player extends Schema {
     @type("string")
     nickname = "";
@@ -72,7 +83,7 @@ export class AbootpalGameState extends Schema {
     
     // wiki
     private truth_player: string = "";
-    private article: any = undefined;
+    private article: Article = new Article("", "");
     
     // *** Constructor ***
     constructor(onMessage: any) {
@@ -182,7 +193,7 @@ export class AbootpalGameState extends Schema {
                 // choose a random article, and propose it to the players
                 this.chooseRandomWikiArticle(
                     (response: any) => {
-                        this.article = response;
+                        this.article = new Article(response.title, response.fullurl);
                         console.log(this.article);
                         
                         // send article title to all players (except judge)
@@ -200,13 +211,13 @@ export class AbootpalGameState extends Schema {
                 this.onMessage(new Message("ClearDisplay"));
                 
                 // hopefully enough time has passed for the XHR to have completed
-                if (this.article != undefined) {
+                if (this.article.title != "" && this.article.url != "") {
                     // choose which player will see the full article at random
                     var ps = Object.keys(this.players).filter((e: any) => { return e !== this.judged_this_round[this.judged_this_round.length - 1] });
                     this.truth_player = ps[Math.floor(Math.random()*ps.length)];
                     
                     // send article to truth-telling player
-                    this.sendWikiArticle(this.truth_player, this.article.fullurl);
+                    this.sendWikiArticle(this.truth_player, this.article.url);
                     // send article title to all other non-judge players
                     for (const sessionId in this.players) {
                         if (sessionId !== this.truth_player && sessionId !== this.judged_this_round[this.judged_this_round.length - 1]) {
@@ -227,7 +238,7 @@ export class AbootpalGameState extends Schema {
             case "Scores": {
                 // reset article & truth-telling player
                 this.truth_player = "";
-                this.article = undefined;
+                this.article = new Article("", "");
             } break;
             case "null": {
                 
