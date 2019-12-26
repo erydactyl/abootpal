@@ -55,20 +55,21 @@ function joinGame() {
                 if (message.data.gamestate === "Playing") {
                     document.querySelector("#status-playstate-timeleft").innerText = message.data.playstate + ": " + message.data.time_left + "s left";
                 } else { document.querySelector("#status-playstate-timeleft").innerText = ""; }
+                // if timer is below zero, set font colour to red
+                if (message.data.time_left < 0) { document.querySelector("#status-playstate-timeleft").style.color = "red"; }
+                else { document.querySelector("#status-playstate-timeleft").style.color = "black"; }
             }
             // display article message
             else if (message.type === "DisplayArticle") {
                 // show wiki iframe
                 document.querySelector("#wikiframe").visibility = "visible";
-                document.querySelector("#wikiframe").height = "100%";
+                document.querySelector("#wikiframe").height = "75%";
                 // display article
                 document.querySelector("#wikiframe").src = message.data.url;
             }
             // display article message
             else if (message.type === "DisplayText") {
                 var ptext = document.createElement("p");
-                ptext.style.width = "100%";
-                ptext.style.height = "32";
                 ptext.innerText = message.data.text;
                 if (message.data.fontweight) ptext.style.fontWeight = message.data.fontweight;
                 if (message.data.fontsize) ptext.style.fontSize = message.data.fontsize;
@@ -100,6 +101,73 @@ function joinGame() {
                 }
                 document.querySelector("#maingame").appendChild(inapprove);
                 document.querySelector("#maingame").appendChild(inreject);
+            }
+            // display text box to describe article
+            else if (message.type === "DisplayArticleDescriptionForm") {
+                var descform = document.createElement("form");
+                descform.id = "form-describe-article";
+                var desctext = document.createElement("input");
+                desctext.id = "input-describe-article";
+                desctext.type = "text";
+                desctext.width = "360px"
+                desctext.autocomplete = "off";
+                desctext.minLength = 1;
+                desctext.maxLength = message.data.maxlength;
+                desctext.placeholder = "Write your description here!"
+                desctext.value = "";
+                var descsub = document.createElement("input");
+                descsub.type = "submit";
+                descsub.value = "Submit";
+                descform.appendChild(desctext);
+                descform.appendChild(descsub);
+                // on form submit, send description to server
+                descform.onsubmit = function(e) {
+                    e.preventDefault();
+                    if (document.querySelector("#input-describe-article").value !== "") {
+                        room.send({ articledescription: document.querySelector("#input-describe-article").value });
+                        // don't clear the form - allow for edits before the time runs out
+                    }
+                }
+                document.querySelector("#maingame").appendChild(descform);
+            }
+            // display a player's submitted description of an article
+            else if (message.type === "DisplayPlayerArticleDescription") {
+                var dname = document.createElement("h3");
+                dname.innerText = message.data.name;
+                var ddesc = document.createElement("p");
+                ddesc.innerText = message.data.description;
+                document.querySelector("#maingame").appendChild(dname);
+                document.querySelector("#maingame").appendChild(ddesc);
+            }
+            // display list of options for judge
+            else if (message.type === "DisplayJudgingMenu") {
+                var judgeform = document.createElement("form");
+                judgeform.id = "form-judge-menu";
+                var judgedd = document.createElement("select");
+                judgedd.id = "select-judge-menu";
+                var emptyelem = document.createElement("option");
+                emptyelem.text = emptyelem.value = "";
+                judgedd.add(emptyelem);
+                for (id in message.data.options) {
+                    var op = document.createElement("option");
+                    op.text = message.data.options[id];
+                    op.value = id;
+                    judgedd.add(op);
+                }
+                var judgesub = document.createElement("input");
+                judgesub.type = "submit";
+                judgesub.value = "Confirm choice";
+                judgeform.appendChild(judgedd);
+                judgeform.appendChild(judgesub);
+                // on form submit, send description to server
+                judgeform.onsubmit = function(e) {
+                    e.preventDefault();
+                    if (document.querySelector("#select-judge-menu").value !== "") {
+                        room.send({ judgetruthchoice: document.querySelector("#select-judge-menu").value });
+                        // don't clear the form - allow for edits before the time runs out
+                    }
+                }
+                document.querySelector("#maingame").appendChild(judgeform);
             }
             // remove article message
             else if (message.type === "ClearDisplay") {

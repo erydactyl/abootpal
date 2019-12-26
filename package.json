@@ -1,10 +1,13 @@
 {
   "name": "abootpal",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "All-But-One Of These People Are Lying",
   "main": "index.ts",
   "author": "Dylan J. White",
   "license": "UNLICENSED",
+  "engines": {
+    "node": "13.5.1"
+  },
   "scripts": {
     "start": "ts-node index.ts",
     "heroku-postbuild": "npm run build"

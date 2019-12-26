@@ -5,12 +5,15 @@ export const NICKNAME_MAX_LENGTH = 16;
 export const CHATMESSAGE_MAX_LENGTH = 256;
 
 // *** Game ***
-export const NUMBER_OF_ROUNDS_DEFAULT = 1;
-export const ARTICLE_MIN_APPROVE_FRAC = 0.5;
 // Timers
 export const TIMERS_DEFAULT: { [playstate: string] : number; } = {
-    ChooseArticle: 5,//20,
-    Research: 15,//180,
-    Judging: 5,//300, // This is number of seconds per non-judge player! ie. with 4 players total, the full phase will take 3x this time
-    Scores: 3//20
+    ChooseArticle: 10,
+    Research: 60,
+    Judging: 60, // This is number of seconds per non-judge player! eg. with 4 players total, the full phase will take 3x this time
+    Scores: 15
 }
+export const NUMBER_OF_ROUNDS_DEFAULT = 1;
+export const ARTICLE_APPROVE_FRAC_MIN = 0.5;
+export const DESCRIPTIONS_REQUIRED_MIN = 2;
+export const ARTICLEDESCRIPTION_MAX_LENGTH = 256;
+export const MISSING_DESCRIPTION_OPTION_TEXT = "[None of the above]"; // this must be something that couldn't be a valid sessionId
