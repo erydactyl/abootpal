@@ -5,7 +5,7 @@ import * as Constants from "./constants";
 var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
 
 export type GameState = "Waiting" | "Lobby" | "Playing";
-export type PlayState = "null" | "ChooseArticle" | "Research" | "Describe" | "Judge" | "Scores";
+export type PlayState = "null" | "ChooseArticle" | "Research" | "Judging" | "Scores";
 
 export type MessageType = "GameStatus" | "DisplayText" | "DisplayApproveRejectButtons" | "DisplayArticle"| "ClearDisplay" | "ChatMessage";
 
@@ -137,7 +137,15 @@ export class AbootpalGameState extends Schema {
                 
                 // enter playing state
                 // set up timers (TODO: let room leader customise these)
-                for (let ps in Constants.TIMERS_DEFAULT) { this.timers_max[ps] = Constants.TIMERS_DEFAULT[ps]; }
+                for (let ps in Constants.TIMERS_DEFAULT) {
+                	// for judging phase, timer is per non-judge player
+                	if (ps == "Judging") {
+                		this.timers_max[ps] = (this.players_count - 1) * Constants.TIMERS_DEFAULT[ps];
+                	}
+                	// otherwise, just use the time defined in Constants
+                	else { this.timers_max[ps] = Constants.TIMERS_DEFAULT[ps]; }
+                	console.log(this.timers_max);
+                }
                 // reset last change time in case returning to research from research state before waiting
                 this.last_playstate_change_time = Date.now();
                 // if starting game from the lobby, game is new, so reset round counter
@@ -238,12 +246,9 @@ export class AbootpalGameState extends Schema {
                     }
                 }
             } break;
-            case "Describe": {
+            case "Judging": {
                 // clear screens
                 this.onMessage(new Message("ClearDisplay"));
-            } break;
-            case "Judge": {
-                
             } break;
             case "Scores": {
                 // reset variables that need resetting for a new rond
@@ -309,12 +314,9 @@ export class AbootpalGameState extends Schema {
                         }
                     } break;
                     case "Research": {
-                        if (this.time_left <= 0) { this.setPlayState("Describe"); }
+                        if (this.time_left <= 0) { this.setPlayState("Judging"); }
                     } break;
-                    case "Describe": {
-                        if (this.time_left <= 0) { this.setPlayState("Judge"); }
-                    } break;
-                    case "Judge": {
+                    case "Judging": {
                         if (this.time_left <= 0) { this.setPlayState("Scores"); }
                     } break;
                     case "Scores": {
