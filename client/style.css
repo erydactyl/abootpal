@@ -143,8 +143,10 @@ input[type="button"]:active, , input[type="submit"]:active {
 
 #maingame {
     width: 100%;
+    max-height: 100%;
     
     text-align: center;
+    overflow-y: auto;
 }
 
 #maingame form {
@@ -165,7 +167,7 @@ input[type="button"]:active, , input[type="submit"]:active {
 }
 
 #maingame p {
-    min-height: 16px;
+    min-height: 8px;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 20px;
     font-weight: normal;
@@ -180,7 +182,7 @@ input[type="button"]:active, , input[type="submit"]:active {
 }
 
 #maingame select {
-    min-width: 64px;
+    min-width: 96px;
 }
 
 #wikiframe {

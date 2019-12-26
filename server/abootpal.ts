@@ -231,6 +231,7 @@ export class AbootpalGameState extends Schema {
 
                 // display judging info
                 this.onMessage(new Message("DisplayText", {text: "You are judging!"}), this.judged_this_round[this.judged_this_round.length - 1]);
+                this.onMessage(new Message("DisplayText", {text: "No need to do anything right now - just sit back and wait for the Research phase to finish!"}), this.judged_this_round[this.judged_this_round.length - 1]);
 
                 // choose a random article, and propose it to the players
                 this.chooseRandomWikiArticle(
@@ -254,6 +255,10 @@ export class AbootpalGameState extends Schema {
             case "Research": {
                 // clear screens
                 this.onMessage(new Message("ClearDisplay"));
+
+                // display judging info
+                this.onMessage(new Message("DisplayText", {text: "You are judging!"}), this.judged_this_round[this.judged_this_round.length - 1]);
+                this.onMessage(new Message("DisplayText", {text: "No need to do anything right now - just sit back and wait for the Research phase to finish!"}), this.judged_this_round[this.judged_this_round.length - 1]);
                 
                 // hopefully enough time has passed for the XHR to have completed
                 if (this.article.title != "" && this.article.url != "") {
@@ -264,7 +269,7 @@ export class AbootpalGameState extends Schema {
                     // send article to truth-telling player
                     this.sendWikiArticle(this.truth_player, this.article.url);
                     // send instructions to the judge
-	        		this.onMessage(new Message("DisplayText", {text: " "}), this.truth_player); // spacing
+	        		this.onMessage(new Message("DisplayText", {text: " ", fontsize: "1px"}), this.truth_player); // small spacing
                     this.onMessage(new Message("DisplayText", {text: "Briefly describe the contents of this article:"}), this.truth_player);
                     // send stuff to all players
                     for (const sessionId in this.players) {
@@ -288,20 +293,19 @@ export class AbootpalGameState extends Schema {
                 // generate a random ordering of players that gave descriptions
                 var players_have_described = new ArraySchema<string>();
                 for (const sessionId in this.article_descriptions) { players_have_described.push(sessionId); }
-                console.log(players_have_described);
                 players_have_described = shuffleArraySchema(players_have_described);
-                console.log(players_have_described);
 
                 // display all the descriptions that were given (show to all players)
                 this.onMessage(new Message("DisplayText", {text: `What is \'${ this.article.title }\'? Is it...`, fontweight: "bold", fontsize: "24px"}));
                 for (var i = 0; i < players_have_described.length; i++) {
-                	console.log(players_have_described[i]);
                 	this.onMessage(new Message("DisplayPlayerArticleDescription", {name: this.players[players_have_described[i]].nickname, description: this.article_descriptions[players_have_described[i]]}));
                 }
 
                 // create list containing drop-down-menu options for judge
                 var list_options = new MapSchema<string>();
-                for (const sessionId in this.article_descriptions) { list_options[sessionId] = this.players[sessionId].nickname; }
+                for (var i = 0; i < players_have_described.length; i++) {
+                	list_options[players_have_described[i]] = this.players[players_have_described[i]].nickname;
+                }
                 // if not all players described, add a 'none of the above' options
                 if (players_have_described.length < this.players_count - 1) { list_options[Constants.MISSING_DESCRIPTION_OPTION_TEXT] = Constants.MISSING_DESCRIPTION_OPTION_TEXT; }
 
