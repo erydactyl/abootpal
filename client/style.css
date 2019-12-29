@@ -126,14 +126,18 @@ input[type="button"]:active, , input[type="submit"]:active {
 }
 
 #scores-table {
-    width: 188px;
+    width: 190px; /* sections width (20 + 128 + 32 = 180), plus 6x1px padding, plus 4 extra pixels */
     table-layout: fixed;
 
     margin: 4px auto;
 }
 
 #scores-table td {
-    height: 20px;
+    display: inline-block;
+    height: 24px;
+    max-height: 24px;
+
+    padding: 0px 1px;
 
     overflow: hidden;
     text-overflow: ellipsis;

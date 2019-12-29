@@ -14,7 +14,7 @@ export const TIMERS_DEFAULT: { [playstate: string] : number; } = {
     Results: 15,
     Ending: 15
 }
-export const NUMBER_OF_ROUNDS_DEFAULT = 1; // defaul no. of rounds before game ends and winner is declared
+export const NUMBER_OF_ROUNDS_DEFAULT = 3; // defaul no. of rounds before game ends and winner is declared
 export const ARTICLE_APPROVE_FRAC_MIN = 0.5;
 export const DESCRIPTIONS_REQUIRED_MIN = 2;
 export const ARTICLEDESCRIPTION_MAX_LENGTH = 256;
