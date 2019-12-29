@@ -73,6 +73,8 @@ export class Player extends Schema {
     nickname = "";
     @type("number")
     score = 0;
+    @type("boolean")
+    isJudge = false;
     constructor(nickname: string) {
         super();
         this.nickname = nickname;
@@ -204,12 +206,23 @@ export class AbootpalGameState extends Schema {
                 // new game
                 if (this.round_number === 1 && this.judged_this_round.length === 0) {
                 	this.onMessage(new Message("DisplayText", {text: "Starting a new game, get ready!"}));
+                	// ensure certain things get reset for new games
+                	for (const sessionId in this.players) {
+                		this.players[sessionId].score = 0;
+                		this.players[sessionId].isJudge = false;
+                	}
                 }
                 // continuing from an existing game that was paused
                 else {
                 	this.onMessage(new Message("DisplayText", {text: "Restarting game, get ready!"}));
                 }
 
+                // ensure resets for new turns
+                this.truth_player = "";
+                this.judge_truth_guess = "";
+                this.article = new Article("", "");
+                this.article_decisions = new MapSchema<"string">();
+                this.article_descriptions = new MapSchema<"string">();
         	} break;
             case "ChooseArticle": {
                 // clear screens
@@ -236,6 +249,10 @@ export class AbootpalGameState extends Schema {
 	                        break; // no conditional - will always break on first iteration
 	                    }
 	                }
+
+	                // set new judge
+	            	for (const sessionId in this.players) { this.players[sessionId].isJudge = false; }
+	                this.players[this.judged_this_round[this.judged_this_round.length - 1]].isJudge = true;
 	                
 	                // announce the judge (once only in chat)
 	                this.onMessage(new Message("ChatMessage", {chatmessage: this.players[this.judged_this_round[this.judged_this_round.length - 1]].nickname + " is judging!"}));
@@ -398,6 +415,11 @@ export class AbootpalGameState extends Schema {
             case "Ending": {
                 // clear screens
                 this.onMessage(new Message("ClearDisplay"));
+
+                // clear anything else that needs clearing
+                this.round_number = 0;
+	            for (const sessionId in this.players) { this.players[sessionId].isJudge = false; }
+	            this.judged_this_round = new ArraySchema<string>();
 
             	// announce game end
             	this.onMessage(new Message("DisplayText", {text: "The game has ended"}));

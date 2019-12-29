@@ -117,12 +117,27 @@ input[type="button"]:active, , input[type="submit"]:active {
 #scores {
     width: 100%;
     height: 100%;
+
+    text-align: center;
 }
 
 #scores h3 {
-    text-align: center;
-    
     margin: 4px 0px;
+}
+
+#scores-table {
+    width: 188px;
+    table-layout: fixed;
+
+    margin: 4px auto;
+}
+
+#scores-table td {
+    height: 20px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 #scores p {

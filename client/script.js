@@ -186,12 +186,19 @@ function joinGame() {
         });
         
         room.state.players.onAdd = function(player, sessionId) {
-            var pscore = document.createElement("p");
-            pscore.style.width = "100%";
-            pscore.style.height = "24";
-            
-            playerscores[sessionId] = pscore;
-            document.querySelector("#scores").appendChild(pscore);
+            var row = document.createElement("tr");
+            var tdjudge = document.createElement("td");
+            tdjudge.style.width = tdjudge.style.maxWidth = "20px";
+            var tdnick = document.createElement("td");
+            tdnick.style.width = tdnick.style.maxWidth = "128px";
+            var tdscore = document.createElement("td");
+            tdscore.style.width = tdscore.style.maxWidth = "32px";
+            row.appendChild(tdjudge);
+            row.appendChild(tdnick);
+            row.appendChild(tdscore);
+
+            playerscores[sessionId] = row;
+            document.querySelector("#scores-table").appendChild(row);
             
             drawPlayerScore(player, sessionId);
             
@@ -200,7 +207,7 @@ function joinGame() {
         }
         
         room.state.players.onRemove = function(player, sessionId) {
-            document.querySelector("#scores").removeChild(playerscores[sessionId]);
+            document.querySelector("#scores-table").removeChild(playerscores[sessionId]);
             delete playerscores[sessionId];
         }
         
@@ -225,7 +232,13 @@ function joinGame() {
     });
     
     function drawPlayerScore(player, sessionId) {
-        playerscores[sessionId].innerText = player.nickname + ": " + player.score;
+        var children = playerscores[sessionId].childNodes;
+        // child 0: judging or not
+        if (player.isJudge) { children[0].innerText = "⚖️"; } else { children[0].innerText = ""; }
+        // child 1: nickname
+        children[1].innerText = player.nickname;
+        // child 2: score
+        children[2].innerText = player.score;
     }
     
     return false;
