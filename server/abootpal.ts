@@ -665,10 +665,6 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
 	            const res = this.state.setPlayState("Ending");
 	            if (res === true) { this.handleMessage(new Message("ChatMessage", {chatmessage: `Stopping game...`})); }
 	            else { this.handleMessage(new Message("ChatMessage", {chatmessage: `${ res }`})); }
-	        } else if (data.chatmessage=="/score increase") {
-	            this.state.modifyPlayerScore(client.sessionId, 1);
-	        } else if (data.chatmessage=="/buttons") {
-	        	this.handleMessage(new Message("DisplayApproveRejectButtons"), client.sessionId);
 	        } else {
 	            this.handleMessage(new Message("ChatMessage", {chatmessage: `[${ this.state.getPlayerNickname(client.sessionId) }] ${ data.chatmessage.slice(0, Constants.CHATMESSAGE_MAX_LENGTH) }`}));
 	        }
