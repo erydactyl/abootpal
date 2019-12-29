@@ -7,6 +7,7 @@ export const CHATMESSAGE_MAX_LENGTH = 256;
 // *** Game ***
 // Timers
 export const TIMERS_DEFAULT: { [playstate: string] : number; } = {
+	Starting: 10,
     ChooseArticle: 10,
     Research: 90,
     Judging: 90, // This is number of seconds per non-judge player! eg. with 4 players total, the full phase will take 3x this time

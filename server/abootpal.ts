@@ -5,7 +5,7 @@ import * as Constants from "./constants";
 var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
 
 export type GameState = "Waiting" | "Lobby" | "Playing";
-export type PlayState = "null" | "ChooseArticle" | "Research" | "Judging" | "Scores";
+export type PlayState = "null" | "Starting" | "ChooseArticle" | "Research" | "Judging" | "Scores";
 
 export type MessageType = "GameStatus" | "DisplayText" | "DisplayApproveRejectButtons" | "DisplayArticleDescriptionForm" | "DisplayPlayerArticleDescription" | "DisplayJudgingMenu" | "DisplayArticle"| "ClearDisplay" | "ChatMessage";
 
@@ -178,8 +178,8 @@ export class AbootpalGameState extends Schema {
                     // reset round number
                     this.round_number = 1;
                 }
-                // (re)start round from Scores playstate
-                this.setPlayState("Scores");
+                // (re)start round from Starting playstate
+                this.setPlayState("Starting");
             } break;
         }
         
@@ -196,6 +196,21 @@ export class AbootpalGameState extends Schema {
         
         // update room 
         switch(newplaystate) {
+        	case "Starting": {
+                // clear screens
+                this.onMessage(new Message("ClearDisplay"));
+
+                // display a message
+                // new game
+                if (this.round_number === 1 && this.judged_this_round.length === 0) {
+                	this.onMessage(new Message("DisplayText", {text: "Starting a new game, get ready!"}));
+                }
+                // continuing from an existing game that was paused
+                else {
+                	this.onMessage(new Message("DisplayText", {text: "Restarting game, get ready!"}));
+                }
+
+        	} break;
             case "ChooseArticle": {
                 // clear screens
                 this.onMessage(new Message("ClearDisplay"));
@@ -418,6 +433,9 @@ export class AbootpalGameState extends Schema {
                 
                 // state-specific logic
                 switch(this.playstate) {
+                	case "Starting": {
+                        if (this.time_left <= 0) { this.setPlayState("ChooseArticle"); }
+                	} break;
                     case "ChooseArticle": {
                         if (this.time_left <= 0) {
                         	// check for any rejections
