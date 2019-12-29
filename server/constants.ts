@@ -11,9 +11,10 @@ export const TIMERS_DEFAULT: { [playstate: string] : number; } = {
     ChooseArticle: 10,
     Research: 90,
     Judging: 90, // This is number of seconds per non-judge player! eg. with 4 players total, the full phase will take 3x this time
-    Scores: 15
+    Results: 15,
+    Ending: 15
 }
-export const NUMBER_OF_ROUNDS_DEFAULT = 1;
+export const NUMBER_OF_ROUNDS_DEFAULT = 1; // defaul no. of rounds before game ends and winner is declared
 export const ARTICLE_APPROVE_FRAC_MIN = 0.5;
 export const DESCRIPTIONS_REQUIRED_MIN = 2;
 export const ARTICLEDESCRIPTION_MAX_LENGTH = 256;

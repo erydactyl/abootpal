@@ -5,7 +5,7 @@ import * as Constants from "./constants";
 var XMLHttpRequest = require("xhr2");//mlhttprequest").XMLHttpRequest;
 
 export type GameState = "Waiting" | "Lobby" | "Playing";
-export type PlayState = "null" | "Starting" | "ChooseArticle" | "Research" | "Judging" | "Scores";
+export type PlayState = "null" | "Starting" | "ChooseArticle" | "Research" | "Judging" | "Results" | "Ending";
 
 export type MessageType = "GameStatus" | "DisplayText" | "DisplayApproveRejectButtons" | "DisplayArticleDescriptionForm" | "DisplayPlayerArticleDescription" | "DisplayJudgingMenu" | "DisplayArticle"| "ClearDisplay" | "ChatMessage";
 
@@ -330,7 +330,7 @@ export class AbootpalGameState extends Schema {
                 this.onMessage(new Message("DisplayJudgingMenu", {options: list_options}), this.judged_this_round[this.judged_this_round.length - 1]);
 
             } break;
-            case "Scores": {
+            case "Results": {
                 // clear screens
                 this.onMessage(new Message("ClearDisplay"));
 
@@ -398,6 +398,56 @@ export class AbootpalGameState extends Schema {
                 this.article_decisions = new MapSchema<"string">();
                 this.article_descriptions = new MapSchema<"string">();
             } break;
+            case "Ending": {
+            	// message
+            	this.onMessage(new Message("DisplayText", {text: "The game has ended"}));
+
+            	// work out who winner(s) is (are)
+            	var winners = new ArraySchema<string>();
+            	for (const sessionId in this.players) {
+            		// add first player to winners list automatically
+            		if (winners.length === 0) { winners.push(sessionId); continue; }
+            		// otherwise, compare scores to existing players in winners array
+            		else {
+            			// if current player has a lower score than existing winners, skip them
+            			if (this.players[sessionId].score < this.players[winners[0]].score) {
+            				continue;
+            			}
+            			// if current player has same score as existing winners, add them to the list
+            			else if (this.players[sessionId].score === this.players[winners[0]].score) {
+            				winners.push(sessionId);
+            				continue;
+            			}
+            			// if current player has a higher score than existing players, clear  winners list and replace with current player
+            			else if (this.players[sessionId].score > this.players[winners[0]].score) {
+            				winners = new ArraySchema<string>();
+            				winners.push(sessionId);
+            				continue;
+            			}
+            		}
+            	}
+
+            	// display winners
+            	// single winner
+            	if (winners.length === 1) {
+            		this.onMessage(new Message("DisplayText", {text: `${ this.players[winners[0]].nickname } is the winner!`, fontsize: "24px", fontweight: "bold"}));
+            	}
+            	// multiple winners
+            	else {
+            		var winstring = "";
+            		for (var i = 0; i < winners.length; i++) {
+            			winstring += this.players[winners[i]].nickname;
+            			// handle connectives (commas, 'and')
+            			if (i === winners.length -1) { continue; } // no connectives after final name
+            			if (winners.length > 2 && i < winners.length - 1) { winstring += ", "; }
+            			if (i === winners.length - 2) {
+            				if (winners.length === 2) { winstring += " "; }
+            				winstring += "and ";
+            			}
+            		}
+            		this.onMessage(new Message("DisplayText", {text: `${ winstring } are the winners!`, fontsize: "24px", fontweight: "bold"}));
+            	}
+            } break;
             case "null": {
                 
             } break;
@@ -407,6 +457,7 @@ export class AbootpalGameState extends Schema {
         this.last_playstate_change_time = Date.now();
         this.playstate = newplaystate;
         this.broadcastGameStatus();
+        return true;
     }
     
     // update the game
@@ -467,11 +518,24 @@ export class AbootpalGameState extends Schema {
                         if (this.time_left <= 0 && number_of_descriptions >= Constants.DESCRIPTIONS_REQUIRED_MIN) { this.setPlayState("Judging"); }
                     } break;
                     case "Judging": {
-                        if (this.time_left <= 0) { this.setPlayState("Scores"); }
+                        if (this.time_left <= 0) { this.setPlayState("Results"); }
                     } break;
-                    case "Scores": {
-                        if (this.time_left <= 0) { this.setPlayState("ChooseArticle"); }
+                    case "Results": {
+                        if (this.time_left <= 0) {
+                        	// go to ending state if end condition reached
+                        	if (this.round_number > Constants.NUMBER_OF_ROUNDS_DEFAULT) {
+                        		this.setPlayState("Ending");
+                        	}
+                        	// otherwise, start a new turn
+                        	else {
+                        		this.setPlayState("ChooseArticle");
+                        	}
+                        }
                     } break;
+                    case "Ending": {
+                    	// at end, return to lobby
+                    	if (this.time_left <= 0) { this.setGameState("Lobby"); }
+                    }
                 }
             } break;
         }
@@ -543,7 +607,7 @@ export class AbootpalGameState extends Schema {
     // judge makes their choice
     setJudgeGuess(choice: string) {
     	this.judge_truth_guess = choice;
-    	this.setPlayState("Scores");
+    	this.setPlayState("Results");
     }
     
     // *** Messages ***
@@ -598,7 +662,7 @@ export class StateHandlerRoom extends Room<AbootpalGameState> {
 	            if (res === true) { this.handleMessage(new Message("ChatMessage", {chatmessage: `Starting game...`})); }
 	            else { this.handleMessage(new Message("ChatMessage", {chatmessage: `${ res }`})); }
 	        } else if (data.chatmessage=="/game stop") {
-	            const res = this.state.setGameState("Lobby");
+	            const res = this.state.setPlayState("Ending");
 	            if (res === true) { this.handleMessage(new Message("ChatMessage", {chatmessage: `Stopping game...`})); }
 	            else { this.handleMessage(new Message("ChatMessage", {chatmessage: `${ res }`})); }
 	        } else if (data.chatmessage=="/score increase") {
