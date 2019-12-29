@@ -229,9 +229,6 @@ export class AbootpalGameState extends Schema {
 	                // if length of judged_this_round is unchanged, all players have judged
 	                // so start a new round, and make first player the judge
 	                if (num_judged_this_round === this.judged_this_round.length) {
-	                    // announce new round
-	                    this.round_number++;
-	                    this.onMessage(new Message("ChatMessage", {chatmessage: "Starting round " + this.round_number + "!"}));
 	                    // clear judged this round, and choose first player as new judge
 	                    this.judged_this_round = new ArraySchema<string>();
 	                    for (const sessionId in this.players) {
@@ -391,7 +388,7 @@ export class AbootpalGameState extends Schema {
                 	}
                 }
 
-                // reset variables that need resetting for a new rond
+                // reset variables that need resetting for a new round
                 this.truth_player = "";
                 this.judge_truth_guess = "";
                 this.article = new Article("", "");
@@ -399,7 +396,10 @@ export class AbootpalGameState extends Schema {
                 this.article_descriptions = new MapSchema<"string">();
             } break;
             case "Ending": {
-            	// message
+                // clear screens
+                this.onMessage(new Message("ClearDisplay"));
+
+            	// announce game end
             	this.onMessage(new Message("DisplayText", {text: "The game has ended"}));
 
             	// work out who winner(s) is (are)
@@ -522,12 +522,22 @@ export class AbootpalGameState extends Schema {
                     } break;
                     case "Results": {
                         if (this.time_left <= 0) {
+                        	// is it a new ronud?
+                        	if (this.judged_this_round.length === this.players_count) {
+				                this.round_number++;
+                        	}
+
                         	// go to ending state if end condition reached
                         	if (this.round_number > Constants.NUMBER_OF_ROUNDS_DEFAULT) {
                         		this.setPlayState("Ending");
                         	}
                         	// otherwise, start a new turn
                         	else {
+                        		// announce new round
+                        		if (this.judged_this_round.length === this.players_count) {
+                        			this.onMessage(new Message("ChatMessage", {chatmessage: "Starting round " + this.round_number + "!"}));
+                        		}
+                        		// restart turn
                         		this.setPlayState("ChooseArticle");
                         	}
                         }
