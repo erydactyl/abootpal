@@ -14,61 +14,68 @@
 
   </head>
   <body>
-    <div id="header-wrapper">
+    <div id="wrapper">
       <div id="title">
-        <h1>All-but-one of these people are lying</h1>
+        <h1>All-but-one of these<br />people are lying</h1>
       </div>
-      <h2>A.K.A. abootpal, v.0.1.0, by <a href="http://dylanjw.co.uk">Dylan J. W.</a></h2>
-    </div>
-    
-    <div id="nickname">
-      <form id="form-nickname" onsubmit="return joinGame();">
-        <label for="form-nickname">Choose a nickname:</label>
-        <input type="text" id="input-nickname" minlength=1 maxlength=16 value="" autofocus />
-        <input type="submit" value="Join game" />
-      </form>
-    </div>
-    
-    <div id="body">
-    
-      <div id="leftcol">
-
-        <div id="status">
-          <h3 id="status-gamestate"></h3>
-          <h3 id="status-roundnumber"></h3>
-          <h3 id="status-playstate-timeleft"></h3>
-        </div>
-
-        <div id="scores">
-          <h3>Scores:</h3>
-          <table id="scores-table"></table>
-        </div>
-
-        <div id="controls"></div>
-        
+      <div id="menubar">
+        <ul>
+          <li id="menu-about">About game</li>
+          <div class="vline"></div>
+          <li id="menu-howto">How to play</li>
+          <div class="vline"></div>
+          <li id="menu-contrib">Contibute</li>
+        </ul>
       </div>
-    
-      <div id="rightcol">
-
-        <div id="mainwindow">
-          <iframe id="wikiframe"></iframe>
-          <div id="maingame"></div>
-        </div>
-
-        <div id="messages">
-          <p>Welcome to this abootpal game!</p>
-        </div>
-    
-        <div id="chat-message">
-          <form id="form-chat-message">
-            <input type="text" id="input-chat-message" autocomplete="off" minlength=1 maxlength=256 placeholder="Type a message to chat" value="" />
-            <input type="submit" value="Send" />
-          </form>
-        </div>
-        
+      
+      <div id="nickname">
+        <form id="form-nickname" onsubmit="return joinGame();">
+          <label for="form-nickname">Choose a nickname:</label>
+          <input type="text" id="input-nickname" minlength=1 maxlength=16 value="" autofocus />
+          <input type="submit" value="Join game" />
+        </form>
       </div>
-    </div>
-    
+      
+      <div id="body">
+      
+        <div id="leftcol">
+
+          <div id="status">
+            <h3 id="status-gamestate"></h3>
+            <h3 id="status-roundnumber"></h3>
+            <h3 id="status-playstate-timeleft"></h3>
+          </div>
+
+          <div id="scores">
+            <h3>Scores:</h3>
+            <table id="scores-table"></table>
+          </div>
+
+          <div id="controls"></div>
+          
+        </div>
+      
+        <div id="rightcol">
+
+          <div id="mainwindow">
+            <iframe id="wikiframe"></iframe>
+            <div id="maingame"></div>
+          </div>
+
+          <div id="messages">
+            <p>Welcome to this abootpal game!</p>
+          </div>
+      
+          <div id="chat-message">
+            <form id="form-chat-message">
+              <input type="text" id="input-chat-message" autocomplete="off" minlength=1 maxlength=256 placeholder="Type a message to chat" value="" />
+              <input type="submit" value="Send" />
+            </form>
+          </div>
+          
+        </div>
+      </div>
+      
     </div>
     
   </body>
