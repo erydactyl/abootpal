@@ -17,7 +17,7 @@ function joinGame() {
         console.log("joined");
         
         document.getElementById("nickname").style.display = "none";
-        document.getElementById("body").style.display = "block";
+        document.getElementById("game-wrapper").style.display = "block";
         
         room.onStateChange.once(function(state) {
             //console.log("initial room state:", state);
@@ -243,3 +243,33 @@ function joinGame() {
     
     return false;
 }
+
+// Menu
+
+var menus = ["about", "howto", "contrib"];
+var currentmenu = undefined;
+
+function menuItemSwitch(clicked) {
+    // close all currently-opened menus
+    for (m in menus) {
+        document.querySelector("#" + menus[m]).style.display = "none";
+        // clear active highlight
+        document.querySelector("#menu-" + menus[m]).style.backgroundColor = "white";
+        document.querySelector("#menu-" + menus[m]).style.boxShadow = "none";
+    }
+
+    // if not currently on the menu that's been clicked, switch to it
+    if (currentmenu != clicked) {
+        document.querySelector("#" + clicked).style.display = "block";
+        currentmenu = clicked;
+        // set active highlight
+        document.querySelector("#menu-" + clicked).style.backgroundColor = "#d3d3d3";
+        document.querySelector("#menu-" + clicked).style.boxShadow = "inset 0 0 10px 10px white";
+    }
+    // otherwise, that menu is already open, so just let it close
+    else { currentmenu = undefined; }
+}
+
+document.querySelector("#menu-about").onclick = function() { menuItemSwitch("about"); }
+document.querySelector("#menu-howto").onclick = function() { menuItemSwitch("howto"); }
+document.querySelector("#menu-contrib").onclick = function() { menuItemSwitch("contrib"); }

@@ -8,25 +8,45 @@
     
     <!-- colyseus.js client -->
     <script type="text/javascript" src="https://rawcdn.githack.com/colyseus/colyseus.js/b769c403be25dcb52bac71d3fb9f45c9f7ac556e/dist/colyseus.js"></script>
-    
-    <!-- main js -->
-    <script src="script.js"></script>
 
   </head>
   <body>
     <div id="wrapper">
+
       <div id="title">
-        <h1>All-but-one of these<br />people are lying</h1>
+        <h1 class="noselect">All-but-one of these<br />people are lying</h1>
       </div>
+
       <div id="menubar">
         <ul>
-          <li id="menu-about">About game</li>
+          <li id="menu-about" class="noselect">About game</li>
           <div class="vline"></div>
-          <li id="menu-howto">How to play</li>
+          <li id="menu-howto" class="noselect">How to play</li>
           <div class="vline"></div>
-          <li id="menu-contrib">Contibute</li>
+          <li id="menu-contrib" class="noselect">Contribute</li>
         </ul>
       </div>
+
+      <div id="about" class="menuitem">
+        <span id="about-content">
+          <p><span style="font-weight:bold;">All-but-one of these people are lying</span> (abootpal) is an open-source, online multiplayer adaptation of <a href="http://www.techdif.co.uk/">the Technical Difficulties'</a> game <a href="https://www.youtube.com/watch?v=3UAOs9B9UH8">Two Of These People Are Lying</a>. It was developed by <a href="https://twitter.com/dylan_jw">Dylan J. White</a>.</p>
+        </span>
+      </div>
+
+      <div id="howto" class="menuitem">
+        <span id="howto-content">
+          <p>Every turn, players get a random article title from Wikipedia, and each one must describe the contents of that article to a judging player. The catch is that only one of the players gets to read the contents of the article, while the others have to make something up based only on the title. The judge must then try to figure out which player is the one telling the truth.</p>
+          <p>As a player describing an article, you get points if the judge chooses you as the truth-telling player. That means that you want to sound as convincing as you can, whether you saw the article's contents or not. As the judge, you get points if you correctly identify which player was telling the truth.</p>
+        </span>
+      </div>
+
+      <div id="contrib" class="menuitem">
+        <span id="contrib-content">
+          <p>The source code for abootpal is publicly available on <a href="https://github.com/Dylan-JW/abootpal">GitHub</a>. This is the place to go if you have ideas for how to improve the game, have found a bug, or would like to contribute something to the game's code.</p>
+        </span>
+      </div>
+
+      <!-- begin game -->
       
       <div id="nickname">
         <form id="form-nickname" onsubmit="return joinGame();">
@@ -36,7 +56,7 @@
         </form>
       </div>
       
-      <div id="body">
+      <div id="game-wrapper">
       
         <div id="leftcol">
 
@@ -75,8 +95,14 @@
           
         </div>
       </div>
+
+      <!-- end game -->
       
     </div>
     
   </body>
+    
+    <!-- main js (called once page loaded) -->
+    <script src="script.js"></script>
+
 </html>

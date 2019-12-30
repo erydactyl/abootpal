@@ -1,3 +1,12 @@
+.noselect {
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -webkit-touch-callout: none;
+}
+
 body {
     font-family: Arial, Helvetica, sans-serif;
     /*font-family: Tahoma, Geneva, sans-serif;*/
@@ -18,6 +27,8 @@ input[type="button"]:active, , input[type="submit"]:active {
     margin: 16px auto 0px auto
 }
 
+/* *** begin title *** */
+
 #title {
     display: table;
     background-color: #e4000f;
@@ -34,7 +45,7 @@ input[type="button"]:active, , input[type="submit"]:active {
 #title h1 {
     display: table-cell;
 
-    font-family: "Arial Black", Gadget, sans-serif;
+    font-family: "Arial Black", "Arial Bold", Gadget, sans-serif;
     font-size: 32px;
     font-weight: normal;
     vertical-align: middle;
@@ -42,6 +53,10 @@ input[type="button"]:active, , input[type="submit"]:active {
     -webkit-text-stroke-width: 2px;
     -webkit-text-stroke-color: black;
 }
+
+/* *** end title *** */
+
+/* *** begin menu *** */
 
 #menubar {
     width: 400px;
@@ -67,15 +82,21 @@ input[type="button"]:active, , input[type="submit"]:active {
     height: 100%;
 
     margin: 0px 5px;
+    padding: 0px;
 
+    font-weight: bold;
+    color: #555555;
     vertical-align: middle;
     cursor: pointer;
     pointer-events: auto;
+
+    background-color: white;
+    box-shadow: none;
 }
 
 #menubar li:hover, #menubar li:active {
-    background-color: #cccccc;
-    box-shadow: inset 0 0 10px 10px white;
+    background-color: #d3d3d3 !important;
+    box-shadow: inset 0 0 10px 10px white !important;
 }
 
 #menubar .vline {
@@ -85,9 +106,43 @@ input[type="button"]:active, , input[type="submit"]:active {
     background-color: #888888;
 }
 
+.menuitem {
+    display: none;
+    width: 640px;
+    height: auto;
+
+    margin: 0px auto 12px auto;
+    padding: 0px;
+
+    border-radius: 10px;
+    box-shadow: inset 0 0 10px #d3d3d3;
+}
+
+.menuitem p {
+    padding: 12px 16px;
+    margin: 0px;
+
+    color: #111111;
+    line-height: 1.3;
+}
+
+.menuitem p a {
+    color: inherit;
+}
+
+.menuitem p a:hover, .menuitem p a:active {
+    color: #444444;
+}
+
+/* *** end menu *** */
+
+/* *** begin game *** */
+
 #nickname {
     display: block;
     text-align: center;
+
+    margin-top: 12px;
 }
 
 #nickname form {
@@ -98,7 +153,7 @@ input[type="button"]:active, , input[type="submit"]:active {
     margin-right: auto;
 }
 
-#body {
+#game-wrapper {
     display: none;
     
     width: 700px;
@@ -259,3 +314,5 @@ input[type="button"]:active, , input[type="submit"]:active {
 #input-chat-message {
     width: 434px;
 }
+
+/* *** end game *** */
