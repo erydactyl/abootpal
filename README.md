@@ -2,6 +2,8 @@
 
 An online multiplayer adaptation of [the Technical Difficulties'](http://www.techdif.co.uk/) game [Two Of These People Are Lying](https://www.youtube.com/watch?v=3UAOs9B9UH8), using node.js with [Colyseus](https://github.com/colyseus/colyseus/) in TypeScript.
 
+Play abootpal: [abootpal.herokuapp.com](https://abootpal.herokuapp.com)
+
 ## About
 
 ### How the game works
@@ -25,7 +27,9 @@ All of this means that you can easily get to the much more important business of
 * Take responsibility for any damage to your relationships caused by lying
 * Use anything close to industry-standard/best coding practice
 
-## Setup
+## Hosting the game yourself
+
+If you'd rather self-host instead of playing the hosted version linked above, here's how you can do it:
 
 ### Prerequisites
 
