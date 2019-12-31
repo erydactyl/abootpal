@@ -7,14 +7,14 @@ function joinGame() {
     
     if (nick.value == "") { return false; } // don't allow empty nicknames
     
-    console.log("selected nickname", nick.value);
+    //console.log("selected nickname", nick.value);
     
     var playerscores = {};
     
     var room;
     client.joinOrCreate("abootpal", {nickname: nick.value}).then(room_instance => {
         room = room_instance;
-        console.log("joined");
+        //console.log("joined");
         
         document.getElementById("nickname").style.display = "none";
         document.getElementById("game-wrapper").style.display = "block";
@@ -30,7 +30,7 @@ function joinGame() {
         
         // listen to patches coming from the server
         room.onMessage(function(message) {
-            console.log(message);
+            //console.log(message);
             // chat message
             if (message.type === "ChatMessage") {
                 var messagesdiv = document.getElementById("messages");
@@ -223,7 +223,7 @@ function joinGame() {
             e.preventDefault();
             var input = document.querySelector("#input-chat-message");
             if (input.value == "") { return false; } // don't send empty messages
-            console.log("input message:", input.value);
+            //console.log("input message:", input.value);
             // send data to room
             room.send({ chatmessage: input.value });
             // clear input
