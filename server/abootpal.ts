@@ -595,7 +595,7 @@ export class AbootpalGameState extends Schema {
     
     // *** Wiki stuff ***
     chooseRandomWikiArticle(callback: any) {
-        getJSONfromURL("https://en.wikipedia.org/w/api.php?origin=*&action=query&format=json&prop=info&inprop=url&generator=random&grnnamespace=0&grnfilterredir=nonredirects&grnlimit=1.json",
+        getJSONfromURL("https://en.wikipedia.org/w/api.php?origin=*&action=query&format=json&prop=info&inprop=url&generator=random&grnnamespace=0&grnfilterredir=nonredirects&grnlimit=1",
             // callback function: will run once API call is finished
             (response: any) => {
                 // pass article back
