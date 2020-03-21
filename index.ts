@@ -3,7 +3,7 @@ import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import { Server } from 'colyseus';
-import { monitor } from '@colyseus/monitor';
+//import { monitor } from '@colyseus/monitor';
 //import socialRoutes from '"'@colyseus/social/express'
 
 import { StateHandlerRoom } from './server/abootpal';
@@ -30,7 +30,8 @@ app.use('/', express.static(path.join(__dirname, 'client')));
 
 // register colyseus monitor AFTER registering your room handlers
 // this is optional!
-app.use('/colyseus', monitor(gameServer));
+const Monitor = require('@colyseus/monitor')
+app.use('/colyseus', Monitor.monitor(gameServer));
 
 // shutdown message on server stop
 gameServer.onShutdown(function() {
