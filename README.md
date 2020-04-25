@@ -2,7 +2,7 @@
 
 An online multiplayer adaptation of [the Technical Difficulties'](http://www.techdif.co.uk/) game [Two Of These People Are Lying](https://www.youtube.com/watch?v=3UAOs9B9UH8), using node.js with [Colyseus](https://github.com/colyseus/colyseus/) in TypeScript.
 
-Play abootpal: [abootpal.herokuapp.com](https://abootpal.herokuapp.com)
+Play abootpal (original branch): [abootpal.herokuapp.com](https://abootpal.herokuapp.com)
 
 ## About
 
